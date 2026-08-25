@@ -1,0 +1,179 @@
+.editor-action-bar .editor-status{margin-left:auto;padding:6px 10px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:.68rem;font-weight:850}.editor-status.dirty{color:var(--warning);background:color-mix(in srgb,var(--warning) 10%,var(--white))}.editor-status.clean{color:var(--success);background:color-mix(in srgb,var(--success) 10%,var(--white))}
+.preview{min-height:230px}.preview iframe{height:330px}.kv{padding:9px 0}.kv dt,.kv dd{font-size:.72rem}
+.hero{padding:20px;border-radius:30px;gap:18px}.hero-card{padding:22px;border-radius:24px}.hero-card h1{font-size:clamp(2rem,3.2vw,3.3rem);line-height:1.02}.dropzone{min-height:235px;border-radius:24px}.drop-icon{width:58px;height:58px;border-radius:19px;font-size:1.4rem}.dropzone strong{font-size:1.2rem}
+.mode-explainer{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;margin-top:12px;padding:11px 12px;border-radius:16px;background:var(--pale);border:1px solid rgba(11,47,35,.08);font-size:.72rem;color:var(--muted)}.mode-explainer strong{display:block;color:var(--dark);font-size:.76rem}.mode-explainer span:first-child{width:28px;height:28px;display:grid;place-items:center;border-radius:999px;background:var(--soft);color:var(--main);font-weight:900}
+@media(max-width:1160px){.editor-layout{grid-template-columns:1fr}.editor-layout>.grid{position:static}.main{padding-left:0}}
+@media(max-width:860px){.sidebar{margin:8px;height:calc(100vh - 16px)}.topbar{margin:8px 8px 0}.content{padding:12px}.editor-action-bar{bottom:8px}.hero-card h1{font-size:2.25rem}}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">MD</div>
+      <div class="brand-copy">
+        <strong>MetaData</strong>
+        <span data-i18n="appSubtitle">Inspection navigateur</span>
+      </div>
+    </div>
+
+    <button class="button primary" id="openSidebarBtn" data-i18n="openFile">Ouvrir un fichier</button>
+
+    <div class="sidebar-title" data-i18n="navSection">Navigation</div>
+    <nav class="nav">
+      <button class="nav-btn active" data-page="home"><span class="nav-icon">⌂</span><span data-i18n="navHome">Tableau de bord</span></button>
+      <button class="nav-btn" data-page="editor"><span class="nav-icon">✎</span><span data-i18n="navEditor">Métadonnées</span></button>
+      <button class="nav-btn" data-page="raw"><span class="nav-icon">≡</span><span data-i18n="navRaw">Vue complète</span></button>
+      <button class="nav-btn" data-page="privacy"><span class="nav-icon">⚿</span><span data-i18n="navPrivacy">Confidentialité</span></button>
+      <button class="nav-btn" data-page="batch"><span class="nav-icon">▦</span><span data-i18n="navBatch">Traitement par lot</span></button>
+      <button class="nav-btn" data-page="history"><span class="nav-icon">↺</span><span data-i18n="navHistory">Historique</span></button>
+      <button class="nav-btn" data-page="settings"><span class="nav-icon">⚙</span><span data-i18n="navSettings">Paramètres</span></button>
+      <button class="nav-btn" data-page="about"><span class="nav-icon">i</span><span data-i18n="navAbout">À propos</span></button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="local-card">
+        <strong data-i18n="localOnlyTitle">Traitement 100 % local</strong><br>
+        <span data-i18n="localOnlyText">Les fichiers restent sur votre appareil. Aucun envoi n'est effectué par l'application.</span>
+      </div>
+      <div class="user-card">
+        <div class="user-badge">MD</div>
+        <div class="user-copy">
+          <strong>MetaData</strong>
+          <span data-i18n="userRole">Mode navigateur</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="menuBtn" aria-label="Menu">☰</button>
+
+      <div class="top-title">
+        <strong id="topTitle">MetaData</strong>
+        <span id="topSubtitle" data-i18n="topSubtitleDefault">Aucun fichier sélectionné</span>
+      </div>
+
+      <div class="top-actions">
+        <button class="button secondary hide-mobile" id="homeJumpBtn" data-i18n="topDashboard">Tableau de bord</button>
+        <button class="button" id="resetBtn" data-i18n="reset">Remettre à zéro</button>
+        <button class="button" id="exportJsonTop" data-i18n="export">Exporter</button>
+        <button class="button primary" id="saveBtn" data-i18n="save">Enregistrer</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="page active" id="page-home">
+        <div class="hero">
+          <div class="hero-card hero-copy">
+            <div class="eyebrow">● <span data-i18n="heroEyebrow">Éditeur de métadonnées universel</span></div>
+            <h1 data-i18n="heroTitle">Vos fichiers, leurs métadonnées, une seule interface.</h1>
+            <p class="lead" data-i18n="heroText">Modifiez des métadonnées intégrées lorsque le navigateur le permet, ou utilisez le mode sidecar universel pour les formats qui ne peuvent pas être réécrits de manière fiable dans le navigateur.</p>
+            <div class="kicker">
+              <span class="badge neutral">JPEG / PNG</span>
+              <span class="badge neutral">PDF</span>
+              <span class="badge neutral">MP3</span>
+              <span class="badge neutral">DOCX / XLSX / PPTX</span>
+              <span class="badge neutral" data-i18n="universalMode">Mode universel</span>
+            </div>
+          </div>
+          <div class="dropzone" id="dropzone" tabindex="0">
+            <div>
+              <div class="drop-icon">↥</div>
+              <strong data-i18n="dropTitle">Glissez un fichier ici</strong>
+              <p data-i18n="dropText">ou cliquez pour le sélectionner. L'application génère automatiquement le profil de métadonnées adapté au type de fichier.</p>
+              <button class="button primary" id="openHeroBtn" data-i18n="chooseFile">Choisir un fichier</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2 data-i18n="currentFile">Fichier courant</h2>
+              <p data-i18n="currentFileText">Profil du fichier, moteur d'édition et statut de sauvegarde.</p>
+            </div>
+          </div>
+          <div class="card" id="currentFileCard"><div class="empty"><strong data-i18n="nothingLoaded">Aucun fichier chargé</strong><span data-i18n="nothingLoadedText">Ouvrez un fichier pour commencer.</span></div></div>
+        </div>
+
+        <div class="section">
+          <div class="grid cols-4">
+            <div class="card stat"><strong id="statFields">0</strong><span data-i18n="statFields">champs détectés</span></div>
+            <div class="card stat"><strong id="statEditable">0</strong><span data-i18n="statEditable">champs éditables</span></div>
+            <div class="card stat"><strong id="statSensitive">0</strong><span data-i18n="statSensitive">éléments sensibles</span></div>
+            <div class="card stat"><strong id="statMode">-</strong><span data-i18n="statMode">mode d'écriture</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-editor">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="editorTitle">Métadonnées</h2>
+            <p id="editorSubtitle" data-i18n="editorSubtitle">Les champs s'adaptent automatiquement au type de fichier.</p>
+          </div>
+          <span class="badge" id="engineBadge">-</span>
+        </div>
+
+        <div id="editorEmpty" class="card empty">
+          <strong data-i18n="editorEmptyTitle">Ouvrez un fichier pour commencer</strong>
+          <span data-i18n="editorEmptyText">L'éditeur affichera les champs adaptés au format détecté.</span>
+        </div>
+
+        <div id="editorWorkspace" class="editor-layout" hidden>
+          <div class="card">
+            <div class="section-head" style="margin-bottom:10px">
+              <div>
+                <h3 data-i18n="descriptiveInfo">Informations descriptives</h3>
+              </div>
+              <span class="badge" id="saveModeBadge">-</span>
+            </div>
+
+            <div class="form-subsection">
+              <div class="form-subsection-title"><span>01</span><span data-i18n="descriptiveInfo">Informations descriptives</span></div>
+              <div id="fieldGrid" class="field-grid"></div>
+            </div>
+
+            <div class="form-subsection" id="modifierSection">
+              <div class="form-subsection-title"><span>02</span><span data-i18n="modifierInfo">Modification et provenance</span></div>
+              <div id="modifierGrid" class="field-grid"></div>
+            </div>
+
+            <div class="notice" id="compatNotice" style="margin-top:16px"></div>
+            <div class="mode-explainer" id="modeExplainer"><span>i</span><div><strong id="modeExplainerTitle">-</strong><div id="modeExplainerText">-</div></div></div>
+
+            <div class="editor-action-bar">
+              <button class="button primary" id="downloadBtn" data-i18n="downloadEdited">Enregistrer</button>
+              <button class="button" id="clearFieldsBtn" data-i18n="clearFields">Vider tous les champs</button>
+              <button class="button" id="resetFieldsBtn" data-i18n="resetFields">Restaurer l'original</button>
+              <button class="button" id="exportJsonBtn" data-i18n="exportJson">Exporter JSON</button>
+              <span class="editor-status clean" id="editorStatus" data-i18n="statusOriginal">Valeurs d'origine</span>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="card">
+              <h3 data-i18n="previewTitle">Aperçu</h3>
+              <div class="preview" id="preview"></div>
+            </div>
+
+            <div class="card">
+              <h3 data-i18n="fileInfo">Informations fichier</h3>
+              <dl class="kv-list" id="fileInfoList"></dl>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-raw">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="rawTitle">Vue complète</h2>
+            <p data-i18n="rawText">Affichage de toutes les métadonnées détectées ainsi que des champs éditables actuels.</p>
+          </div>
+          <input class="search" id="rawSearch" style="max-width:340px" placeholder="Rechercher une métadonnée">
+        </div>
+        <div class="card">
