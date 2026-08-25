@@ -3,438 +3,111 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#3f6758">
-<meta name="description" content="Metadata Editor - inspect and edit file metadata locally in your browser.">
+<meta name="theme-color" content="#0b2f23">
+<meta name="description" content="Metadata Editor - inspect and edit metadata locally in your browser.">
 <title>Metadata Editor</title>
-
-<!-- Libraries loaded from CDN. The files themselves remain local in the browser. -->
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-
-<link rel="stylesheet" href="styles.css">
+<style>
+:root{--page-width:1320px;--deep:#061f17;--dark:#0b2f23;--main:#1f6f50;--light:#77b892;--soft:#dceee3;--pale:#f3faf5;--cream:#fbf7ed;--text:#1d261f;--muted:#5f6f65;--white:#fff;--danger:#934f4b;--warning:#80682c;--shadow:0 18px 45px rgba(11,47,35,.16);--shadow-soft:0 12px 30px rgba(11,47,35,.10);--sidebar:276px;--font-scale:1;--focus:0 0 0 4px rgba(31,111,80,.18)}
+html[data-theme="dark"]{--deep:#03100c;--dark:#dceee3;--main:#77b892;--light:#9fd3b1;--soft:#193f2e;--pale:#0b1f17;--cream:#07130f;--text:#edf8f0;--muted:#b8cabc;--white:#10251c;--danger:#d98b84;--warning:#d5b66f;--shadow:0 18px 45px rgba(0,0,0,.38);--shadow-soft:0 12px 30px rgba(0,0,0,.22);--focus:0 0 0 4px rgba(119,184,146,.22)}
+html[data-palette="cassis"]{--deep:#2f1524;--dark:#563249;--main:#85546e;--light:#b9839f;--soft:#efe1e8;--pale:#fbf5f8}html[data-theme="dark"][data-palette="cassis"]{--deep:#170b12;--dark:#f0dce6;--main:#c594ad;--light:#dfb3c8;--soft:#4a2d3c;--pale:#24141d}
+html[data-palette="blue"]{--deep:#102735;--dark:#244b60;--main:#4e7e94;--light:#88b2c5;--soft:#deedf3;--pale:#f3f9fb}html[data-theme="dark"][data-palette="blue"]{--deep:#08141b;--dark:#dcecf3;--main:#91bbcd;--light:#b5d5e1;--soft:#29434f;--pale:#11242d}
+html[data-contrast="high"]{--muted:var(--text)}html[data-dyslexia="on"] body{font-family:Verdana,Arial,sans-serif;letter-spacing:.025em;word-spacing:.06em}html[data-motion="reduced"] *,html[data-motion="reduced"] *:before,html[data-motion="reduced"] *:after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+*{box-sizing:border-box}html{font-size:calc(16px * var(--font-scale));scroll-behavior:smooth}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65;color:var(--text);background:radial-gradient(circle at 8% 0%,rgba(119,184,146,.22),transparent 30%),radial-gradient(circle at 92% 32%,rgba(220,238,227,.55),transparent 32%),linear-gradient(180deg,var(--cream),var(--pale));overflow-x:hidden}html[data-theme="dark"] body{background:radial-gradient(circle at 8% 0%,rgba(119,184,146,.15),transparent 30%),radial-gradient(circle at 92% 32%,rgba(31,111,80,.18),transparent 32%),linear-gradient(180deg,#07130f,#0b1f17)}button,input,textarea,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:none;box-shadow:var(--focus)}button:disabled{opacity:.45;cursor:not-allowed}
+.app{display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);min-height:100vh}.sidebar{position:sticky;top:0;z-index:40;height:100vh;padding:20px 16px;display:flex;flex-direction:column;gap:18px;background:rgba(251,247,237,.94);border-right:1px solid rgba(11,47,35,.12);box-shadow:10px 0 30px rgba(11,47,35,.05);backdrop-filter:blur(14px);transition:transform .22s ease}html[data-theme="dark"] .sidebar{background:rgba(7,19,15,.94);border-color:rgba(220,238,227,.12)}.brand{display:flex;align-items:center;gap:13px;padding:6px 7px 2px}.brand-mark{width:52px;height:52px;display:grid;place-items:center;flex:0 0 52px;border-radius:18px;color:#fff;background:linear-gradient(135deg,var(--deep),var(--main));box-shadow:0 12px 26px rgba(11,47,35,.22);font:900 1.2rem Georgia,serif}.brand-copy strong{display:block;color:var(--dark);font:700 1.08rem Georgia,serif}.brand-copy span{display:block;margin-top:2px;color:var(--muted);font-size:.72rem;font-weight:750}.nav{display:grid;gap:6px}.nav-btn,.button,.icon-btn{border:0;transition:.18s ease}.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:999px;text-align:left;color:var(--muted);background:transparent;font-weight:820}.nav-btn:hover{transform:translateX(2px);color:var(--dark);background:rgba(119,184,146,.12)}.nav-btn.active{color:#fff;background:linear-gradient(90deg,var(--deep),var(--main));box-shadow:0 8px 20px rgba(31,111,80,.18)}.nav-icon{width:28px;height:28px;display:grid;place-items:center;flex:0 0 28px;border-radius:999px;background:var(--pale);color:var(--main);font-size:.82rem}.nav-btn.active .nav-icon{background:#fff;color:var(--main)}.sidebar-footer{margin-top:auto}.local-card{padding:14px;border-radius:20px;color:var(--muted);background:var(--pale);border:1px solid rgba(11,47,35,.08);font-size:.74rem;line-height:1.5}.local-card strong{color:var(--dark)}.version{margin-top:9px;color:var(--muted);font-size:.67rem;padding:0 7px}
+.main{min-width:0}.topbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 24px;background:rgba(251,247,237,.88);border-bottom:1px solid rgba(11,47,35,.10);backdrop-filter:blur(12px)}html[data-theme="dark"] .topbar{background:rgba(7,19,15,.88);border-color:rgba(220,238,227,.10)}.top-title{min-width:0}.top-title strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dark);font:700 1.05rem Georgia,serif}.top-title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;color:var(--muted);font-size:.72rem}.top-actions{display:flex;gap:8px}.button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 14px;border-radius:999px;color:var(--dark);background:rgba(251,247,237,.92);border:1px solid rgba(11,47,35,.14);font-weight:900;box-shadow:0 7px 18px rgba(11,47,35,.07)}html[data-theme="dark"] .button{background:rgba(16,37,28,.88);border-color:rgba(220,238,227,.14)}.button:hover:not(:disabled){transform:translateY(-2px);background:var(--soft)}.button.primary{color:#fff;background:var(--main);border-color:var(--main);box-shadow:0 10px 24px rgba(31,111,80,.20)}.button.primary:hover:not(:disabled){background:var(--deep);border-color:var(--deep)}html[data-theme="dark"] .button.primary{color:#07130f}.button.danger{color:var(--danger);background:color-mix(in srgb,var(--danger) 8%,var(--white));border-color:color-mix(in srgb,var(--danger) 28%,transparent);box-shadow:none}.button.small{min-height:34px;padding:7px 10px;font-size:.75rem}.icon-btn{width:42px;height:42px;display:grid;place-items:center;padding:0;border-radius:999px;color:var(--dark);background:var(--soft)}.icon-btn:hover{background:var(--main);color:#fff}
+.content{width:100%;max-width:var(--page-width);margin:auto;padding:24px 5.5% 80px}.page{display:none;animation:fade .2s ease}.page.active{display:block}@keyframes fade{from{opacity:.55;transform:translateY(5px)}to{opacity:1;transform:none}}.hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(310px,.88fr);gap:44px;align-items:center;padding:42px;border-radius:32px;color:#fff;background:radial-gradient(circle at top right,rgba(220,238,227,.28),transparent 30%),radial-gradient(circle at bottom left,rgba(119,184,146,.22),transparent 34%),linear-gradient(135deg,var(--deep),#0b2f23 48%,var(--main));box-shadow:var(--shadow)}html[data-palette="cassis"] .hero,html[data-palette="blue"] .hero{background:radial-gradient(circle at top right,rgba(255,255,255,.18),transparent 30%),linear-gradient(135deg,var(--deep),var(--dark) 48%,var(--main))}.hero:after{content:"";position:absolute;width:380px;height:380px;right:-150px;bottom:-170px;border-radius:50%;background:rgba(255,255,255,.09)}.hero>*{position:relative;z-index:1}.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 13px;border:1px solid rgba(255,255,255,.34);border-radius:999px;color:var(--soft);font-size:.78rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase}h1,h2,h3,p{margin-top:0}h1{margin:20px 0 14px;max-width:840px;font:700 clamp(2.35rem,5vw,4.25rem)/.98 Georgia,serif;letter-spacing:-.047em}h2{margin:0;color:var(--dark);font:700 clamp(1.8rem,3vw,2.8rem)/1.08 Georgia,serif;letter-spacing:-.025em}h3{margin-bottom:10px;color:var(--dark);font:700 1.12rem Georgia,serif}.lead{color:var(--muted);line-height:1.7}.hero .lead{max-width:800px;color:rgba(255,255,255,.86);font-size:1.03rem}.dropzone{min-height:278px;display:grid;place-items:center;padding:28px;text-align:center;border:1px solid rgba(255,255,255,.26);border-radius:30px;background:rgba(255,255,255,.12);backdrop-filter:blur(12px);box-shadow:0 18px 38px rgba(0,0,0,.12)}.dropzone:hover,.dropzone.drag{transform:translateY(-3px);background:rgba(255,255,255,.18)}.drop-icon{width:70px;height:70px;display:grid;place-items:center;margin:0 auto 14px;border-radius:24px;color:#0b2f23;background:#dceee3;font-size:1.7rem;font-weight:900}.dropzone strong{font:700 1.28rem Georgia,serif}.dropzone p{max-width:330px;margin:8px auto 14px;color:rgba(255,255,255,.80);font-size:.8rem}.hero .badge{color:#0b2f23;background:#dceee3}
+.section{margin-top:38px}.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:17px}.section-head>div:first-child{position:relative;padding-left:20px}.section-head>div:first-child:before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:5px;border-radius:999px;background:var(--main)}.section-head p{margin:7px 0 0;color:var(--muted);font-size:.82rem}.grid{display:grid;gap:18px}.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.card{min-width:0;padding:22px;border-radius:24px;background:rgba(255,255,255,.92);border:1px solid rgba(11,47,35,.12);box-shadow:var(--shadow-soft);transition:.2s ease}html[data-theme="dark"] .card{background:rgba(16,37,28,.88);border-color:rgba(220,238,227,.12)}.card:hover{transform:translateY(-2px);border-color:var(--main);box-shadow:var(--shadow)}.stat{position:relative;overflow:hidden}.stat:after{content:"";position:absolute;width:82px;height:82px;right:-35px;bottom:-35px;border-radius:50%;background:var(--soft)}.stat strong{position:relative;z-index:1;display:block;color:var(--main);font:700 2rem Georgia,serif}.stat span{position:relative;z-index:1;color:var(--muted);font-size:.73rem;font-weight:800}.file-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:15px;align-items:center}.file-icon{width:55px;height:55px;display:grid;place-items:center;border-radius:18px;color:#fff;background:linear-gradient(135deg,var(--deep),var(--main));font-size:.78rem;font-weight:950}.file-meta strong,.file-meta span{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.file-meta strong{color:var(--dark);font:700 1rem Georgia,serif}.file-meta span{margin-top:4px;color:var(--muted);font-size:.73rem}.badge{display:inline-flex;width:max-content;padding:7px 11px;border-radius:999px;color:var(--dark);background:var(--soft);font-size:.68rem;font-weight:900}.badge.warn{color:var(--warning)}
+.editor-layout{display:grid;grid-template-columns:minmax(0,1.14fr) minmax(330px,.86fr);gap:20px}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:grid;gap:7px}.field.full{grid-column:1/-1}.field label{color:var(--dark);font-size:.73rem;font-weight:900}.field input,.field textarea,.search{width:100%;padding:11px 13px;color:var(--text);border:1px solid rgba(11,47,35,.12);border-radius:16px;background:var(--pale);outline:none}.field input:focus,.field textarea:focus,.search:focus{border-color:var(--main);box-shadow:0 0 0 3px color-mix(in srgb,var(--main) 16%,transparent)}.field textarea{min-height:100px;resize:vertical}.preview{min-height:300px;display:grid;place-items:center;overflow:hidden;border-radius:22px;background:var(--pale);border:1px solid rgba(11,47,35,.08)}.preview img,.preview video{display:block;max-width:100%;max-height:410px}.preview audio{width:calc(100% - 30px)}.preview iframe{width:100%;height:430px;border:0;background:#fff}.toolbar{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}.kv{display:grid;grid-template-columns:minmax(130px,.34fr) minmax(0,1fr);gap:12px;padding:11px 0;border-bottom:1px solid rgba(11,47,35,.10)}.kv:last-child{border-bottom:0}.kv dt{color:var(--main);font-size:.72rem;font-weight:900}.kv dd{margin:0;overflow-wrap:anywhere;font-size:.8rem}.notice{padding:14px 15px;border-radius:18px;color:var(--dark);background:var(--pale);border:1px solid rgba(11,47,35,.08);font-size:.77rem}.notice.warn{color:var(--warning)}.raw-table{width:100%;border-collapse:collapse}.raw-table th,.raw-table td{padding:12px 11px;text-align:left;vertical-align:top;border-bottom:1px solid rgba(11,47,35,.10);font-size:.79rem}.raw-table th{color:var(--main);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase}.raw-table td:first-child{width:34%;color:var(--dark);font-weight:850}.empty{padding:38px;text-align:center;color:var(--muted)}.empty strong{display:block;margin-bottom:7px;color:var(--dark);font:700 1.05rem Georgia,serif}.privacy-list,.batch-list,.history-list{display:grid;gap:10px}.privacy-item,.batch-row,.history-item{padding:13px 14px;border-radius:18px;background:var(--pale);border:1px solid rgba(11,47,35,.07)}.privacy-item{display:flex;gap:11px;align-items:flex-start}.privacy-item input{margin-top:3px;accent-color:var(--main)}.privacy-item strong,.batch-row strong,.history-item strong{color:var(--dark);font-size:.8rem}.privacy-item p,.batch-row span,.history-item span{display:block;margin:3px 0 0;color:var(--muted);font-size:.72rem}.batch-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center}.sensitive-row{padding:13px 2px;border-bottom:1px solid rgba(11,47,35,.10)}.sensitive-row strong{display:block;color:var(--dark);font-size:.8rem}.sensitive-row span{display:block;color:var(--muted);font-size:.72rem;overflow-wrap:anywhere}.setting-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:15px 0;border-bottom:1px solid rgba(11,47,35,.10)}.setting-copy strong{color:var(--dark)}.setting-copy span{display:block;color:var(--muted);font-size:.72rem}.segmented{display:flex;gap:5px;padding:5px;border-radius:999px;background:var(--pale)}.segmented button{padding:8px 12px;color:var(--dark);border:0;border-radius:999px;background:transparent;font-weight:850}.segmented button.active{color:#fff;background:var(--main)}.toggle{width:50px;height:28px;accent-color:var(--main)}.range{width:150px;accent-color:var(--main)}select{padding:8px 11px;color:var(--text);border:1px solid rgba(11,47,35,.12);border-radius:999px;background:var(--pale)}.toast-zone{position:fixed;right:20px;bottom:20px;z-index:200;display:grid;gap:8px;width:min(390px,calc(100vw - 40px))}.toast{padding:14px 15px;border:1px solid rgba(11,47,35,.12);border-radius:20px;background:var(--cream);box-shadow:var(--shadow)}.toast strong{display:block;color:var(--dark);font-size:.8rem}.toast span{display:block;color:var(--muted);font-size:.72rem}
+@media(max-width:1080px){.hero,.editor-layout{grid-template-columns:1fr}.cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:820px){.app{display:block}.sidebar{position:fixed;left:0;transform:translateX(-105%);box-shadow:var(--shadow)}body.sidebar-open .sidebar{transform:translateX(0)}.content{padding:16px 16px 60px}.topbar{padding:12px 14px}.cols-2,.cols-3,.cols-4,.field-grid{grid-template-columns:1fr}.hero{padding:28px 22px;border-radius:28px}.hide-mobile{display:none}.kv{grid-template-columns:1fr;gap:3px}}@media(max-width:520px){.top-title span{display:none}.top-actions .button.primary{max-width:150px;padding:8px;font-size:.68rem}.file-card{grid-template-columns:auto minmax(0,1fr)}.file-card .badge{grid-column:2}h1{font-size:2.4rem}.toolbar>*{flex:1 1 150px}.section-head{align-items:flex-start;flex-direction:column}}
+</style>
 </head>
-
-
 <body>
 <div class="app">
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-mark">ME</div>
-      <div class="brand-copy">
-        <strong>Metadata Editor</strong>
-        <span data-i18n="brandSub">Portfolio tools</span>
-      </div>
-    </div>
-
-    <button class="button primary" id="openSidebar" data-i18n="openFile">+ Ouvrir un fichier</button>
-
-    <nav>
-      <button class="nav-btn active" data-page="home"><span class="nav-icon">⌂</span><span data-i18n="navHome">Vue générale</span></button>
-      <button class="nav-btn" data-page="editor"><span class="nav-icon">✎</span><span data-i18n="navEditor">Métadonnées</span></button>
-      <button class="nav-btn" data-page="raw"><span class="nav-icon">≡</span><span data-i18n="navRaw">Vue complète</span></button>
-      <button class="nav-btn" data-page="batch"><span class="nav-icon">▦</span><span data-i18n="navBatch">Traitement par lot</span></button>
-      <button class="nav-btn" data-page="privacy"><span class="nav-icon">◉</span><span data-i18n="navPrivacy">Confidentialité</span></button>
-      <button class="nav-btn" data-page="history"><span class="nav-icon">↺</span><span data-i18n="navHistory">Historique</span></button>
-      <button class="nav-btn" data-page="settings"><span class="nav-icon">⚙</span><span data-i18n="navSettings">Personnalisation</span></button>
-      <button class="nav-btn" data-page="about"><span class="nav-icon">i</span><span data-i18n="navAbout">À propos</span></button>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="local-card">
-        <strong data-i18n="localOnly">100 % local</strong><br>
-        <span data-i18n="localOnlyText">Les fichiers sont traités dans votre navigateur et ne sont jamais envoyés vers un serveur.</span>
-      </div>
-      <div class="version">Metadata Editor · HTML V1</div>
-    </div>
-  </aside>
-
-  <main class="main">
-    <header class="topbar">
-      <button class="icon-btn" id="menuBtn" aria-label="Menu">☰</button>
-
-      <div class="top-title">
-        <strong id="topTitle">Metadata Editor</strong>
-        <span id="topSubtitle" data-i18n="noFile">Aucun fichier sélectionné</span>
-      </div>
-
-      <div class="top-actions">
-        <button class="button hide-mobile" id="quickSettings" data-i18n="customize">Personnaliser</button>
-        <button class="button primary" id="topDownload" disabled data-i18n="downloadEdited">Télécharger le fichier modifié</button>
-      </div>
-    </header>
-
-    <div class="content">
-
-      <section class="page active" id="page-home">
-        <div class="hero">
-          <div>
-            <div class="eyebrow">● <span data-i18n="heroEyebrow">Éditeur universel de métadonnées</span></div>
-            <h1 data-i18n="heroTitle">Vos fichiers, leurs métadonnées, un seul outil.</h1>
-            <p class="lead" data-i18n="heroLead">
-              Inspectez et modifiez les informations intégrées aux images, PDF, fichiers audio et documents Office.
-              Le type de fichier est détecté automatiquement et l'interface s'adapte aux champs réellement pertinents.
-            </p>
-            <div class="toolbar">
-              <button class="button primary" id="openHero" data-i18n="chooseFile">Choisir un fichier</button>
-              <button class="button" data-page-jump="privacy" data-i18n="privacyAudit">Analyser les données sensibles</button>
-            </div>
-          </div>
-
-          <div class="dropzone" id="dropzone" tabindex="0">
-            <div>
-              <div class="drop-icon">↥</div>
-              <strong data-i18n="dropTitle">Glissez un fichier ici</strong>
-              <p data-i18n="dropText">ou cliquez pour le sélectionner. Le fichier reste sur votre appareil.</p>
-              <span class="badge" data-i18n="formats">Images · PDF · Audio · Vidéo · Office</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-head">
-            <div>
-              <h2 data-i18n="currentFile">Fichier courant</h2>
-              <p data-i18n="currentFileSub">Détection automatique du format et du moteur d'édition.</p>
-            </div>
-          </div>
-          <div class="card" id="currentFileCard">
-            <div class="empty">
-              <strong data-i18n="nothingLoaded">Aucun fichier chargé</strong>
-              <span data-i18n="nothingLoadedText">Ouvrez un fichier pour afficher son profil de métadonnées.</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="grid cols-4">
-            <div class="card stat"><strong id="statFields">0</strong><span data-i18n="statFields">champs détectés</span></div>
-            <div class="card stat"><strong id="statEditable">0</strong><span data-i18n="statEditable">champs éditables</span></div>
-            <div class="card stat"><strong id="statSensitive">0</strong><span data-i18n="statSensitive">éléments sensibles</span></div>
-            <div class="card stat"><strong>Local</strong><span data-i18n="statMode">mode de traitement</span></div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="grid cols-3">
-            <div class="card">
-              <h3 data-i18n="smartTitle">Adaptatif</h3>
-              <p class="lead" style="font-size:.84rem" data-i18n="smartText">Les champs changent selon le format : EXIF pour les images, propriétés documentaires pour les PDF et Office, ID3 pour les MP3.</p>
-            </div>
-            <div class="card">
-              <h3 data-i18n="privacyTitle">Confidentiel</h3>
-              <p class="lead" style="font-size:.84rem" data-i18n="privacyText">Le traitement est effectué dans le navigateur. Aucun fichier n'est téléversé par l'application.</p>
-            </div>
-            <div class="card">
-              <h3 data-i18n="safeTitle">Réversible</h3>
-              <p class="lead" style="font-size:.84rem" data-i18n="safeText">Le fichier original n'est jamais écrasé. Toute modification produit une nouvelle copie à télécharger.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="page" id="page-editor">
-        <div class="section-head">
-          <div>
-            <h2 data-i18n="editorTitle">Métadonnées</h2>
-            <p id="editorSubtitle" data-i18n="editorSub">Les champs adaptés au fichier apparaîtront ici.</p>
-          </div>
-          <span class="badge" id="engineBadge">-</span>
-        </div>
-
-        <div id="editorEmpty" class="card empty">
-          <strong data-i18n="openToEdit">Ouvrez un fichier pour commencer</strong>
-          <span data-i18n="openToEditText">L'éditeur déterminera automatiquement les propriétés disponibles.</span>
-        </div>
-
-        <div id="editorWorkspace" class="editor-layout" hidden>
-          <div class="card">
-            <div id="fieldGrid" class="field-grid"></div>
-
-            <div class="toolbar">
-              <button class="button primary" id="downloadEdited" data-i18n="downloadEdited">Télécharger le fichier modifié</button>
-              <button class="button" id="resetFields" data-i18n="resetFields">Rétablir les valeurs</button>
-              <button class="button" id="exportJson" data-i18n="exportJson">Exporter JSON</button>
-            </div>
-
-            <div class="notice" id="compatNotice" style="margin-top:14px"></div>
-          </div>
-
-          <div class="grid">
-            <div class="card">
-              <h3 data-i18n="previewTitle">Aperçu</h3>
-              <div class="preview" id="preview"></div>
-            </div>
-
-            <div class="card">
-              <h3 data-i18n="fileInfo">Informations fichier</h3>
-              <dl id="fileInfoList"></dl>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="page" id="page-raw">
-        <div class="section-head">
-          <div>
-            <h2 data-i18n="rawTitle">Vue complète</h2>
-            <p data-i18n="rawSub">Toutes les métadonnées détectées, y compris les propriétés en lecture seule.</p>
-          </div>
-          <input class="search" id="rawSearch" style="max-width:330px" data-i18n-placeholder="searchMetadata" placeholder="Rechercher une métadonnée">
-        </div>
-
-        <div class="card">
-          <div id="rawEmpty" class="empty">
-            <strong data-i18n="nothingLoaded">Aucun fichier chargé</strong>
-          </div>
-
-          <div style="overflow:auto">
-            <table class="raw-table" id="rawTable" hidden>
-              <thead>
-                <tr>
-                  <th data-i18n="field">Champ</th>
-                  <th data-i18n="value">Valeur</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section class="page" id="page-batch">
-        <div class="section-head">
-          <div>
-            <h2 data-i18n="batchTitle">Traitement par lot</h2>
-            <p data-i18n="batchSub">Chargez plusieurs fichiers pour créer un inventaire de métadonnées.</p>
-          </div>
-          <button class="button primary" id="batchPick" data-i18n="addFiles">Ajouter des fichiers</button>
-        </div>
-
-        <div class="grid cols-2">
-          <div class="card">
-            <h3 data-i18n="batchFiles">Fichiers</h3>
-            <div id="batchList" class="batch-list">
-              <div class="empty"><span data-i18n="batchEmpty">Aucun fichier dans le lot.</span></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3 data-i18n="batchActions">Actions</h3>
-            <div class="settings-group">
-              <button class="button" id="batchJson" data-i18n="exportManifest">Exporter l'inventaire JSON</button>
-              <button class="button" id="batchCsv" data-i18n="exportCsv">Exporter l'inventaire CSV</button>
-              <button class="button danger" id="batchClear" data-i18n="clearBatch">Vider la liste</button>
-              <div class="notice" data-i18n="batchNote">L'analyse en lot reste locale. Aucun fichier n'est envoyé vers GitHub ou un serveur externe.</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="page" id="page-privacy">
-        <div class="section-head">
-          <div>
-            <h2 data-i18n="privacyAuditTitle">Confidentialité</h2>
-            <p data-i18n="privacyAuditSub">Repérez rapidement les informations susceptibles d'identifier une personne, un appareil, un logiciel ou une localisation.</p>
-          </div>
-        </div>
-
-        <div class="grid cols-2">
-          <div class="card">
-            <h3 data-i18n="sensitiveDetected">Éléments sensibles détectés</h3>
-            <div id="privacyResults">
-              <div class="empty"><span data-i18n="privacyEmpty">Chargez un fichier pour lancer l'analyse.</span></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3 data-i18n="privacyActions">Nettoyage</h3>
-
-            <div class="privacy-list">
-              <label class="privacy-item">
-                <input type="checkbox" id="cleanAuthor" checked>
-                <span>
-                  <strong data-i18n="cleanAuthor">Identité et auteur</strong>
-                  <p data-i18n="cleanAuthorText">Auteur, artiste, créateur, dernière modification par.</p>
-                </span>
-              </label>
-
-              <label class="privacy-item">
-                <input type="checkbox" id="cleanLocation" checked>
-                <span>
-                  <strong data-i18n="cleanLocation">Localisation</strong>
-                  <p data-i18n="cleanLocationText">Coordonnées GPS et informations géographiques accessibles.</p>
-                </span>
-              </label>
-
-              <label class="privacy-item">
-                <input type="checkbox" id="cleanSoftware" checked>
-                <span>
-                  <strong data-i18n="cleanSoftware">Logiciels et appareil</strong>
-                  <p data-i18n="cleanSoftwareText">Logiciel, modèle d'appareil, caméra et outils de production.</p>
-                </span>
-              </label>
-
-              <label class="privacy-item">
-                <input type="checkbox" id="cleanDates">
-                <span>
-                  <strong data-i18n="cleanDates">Dates intégrées</strong>
-                  <p data-i18n="cleanDatesText">Dates de création et de modification présentes dans les métadonnées.</p>
-                </span>
-              </label>
-            </div>
-
-            <button class="button primary" id="applyPrivacy" style="margin-top:14px" disabled data-i18n="prepareClean">Préparer une copie nettoyée</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="page" id="page-history">
-        <div class="section-head">
-          <div>
-            <h2 data-i18n="historyTitle">Historique local</h2>
-            <p data-i18n="historySub">Journal des opérations conservé uniquement dans ce navigateur.</p>
-          </div>
-          <button class="button" id="clearHistory" data-i18n="clearHistory">Effacer l'historique</button>
-        </div>
-        <div class="card">
-          <div id="historyList" class="history-list"></div>
-        </div>
-      </section>
-
-      <section class="page" id="page-settings">
-        <div class="section-head">
-          <div>
-            <h2 data-i18n="settingsTitle">Personnalisation</h2>
-            <p data-i18n="settingsSub">Les préférences sont mémorisées localement dans le navigateur.</p>
-          </div>
-        </div>
-
-        <div class="grid cols-2">
-          <div class="card settings-group">
-            <h3 data-i18n="appearance">Apparence</h3>
-
-            <div class="setting-row">
-              <div class="setting-copy">
-                <strong data-i18n="theme">Thème</strong>
-                <span data-i18n="themeText">Clair ou sombre.</span>
-              </div>
-              <div class="segmented" id="themeSegment">
-                <button data-value="light" class="active" data-i18n="light">Clair</button>
-                <button data-value="dark" data-i18n="dark">Sombre</button>
-              </div>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-copy">
-                <strong data-i18n="palette">Palette</strong>
-                <span data-i18n="paletteText">Vert Portfolio, cassis ou bleu.</span>
-              </div>
-              <select id="paletteSelect">
-                <option value="green">Vert</option>
-                <option value="cassis">Cassis</option>
-                <option value="blue">Bleu</option>
-              </select>
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-copy">
-                <strong data-i18n="language">Langue</strong>
-                <span data-i18n="languageText">Interface française ou anglaise.</span>
-              </div>
-              <div class="segmented" id="langSegment">
-                <button data-value="fr" class="active">FR</button>
-                <button data-value="en">EN</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="card settings-group">
-            <h3 data-i18n="accessibility">Accessibilité</h3>
-
-            <div class="setting-row">
-              <div class="setting-copy">
-                <strong data-i18n="highContrast">Contraste renforcé</strong>
-                <span data-i18n="highContrastText">Accentue les séparations et les éléments interactifs.</span>
-              </div>
-              <input class="toggle" type="checkbox" id="contrastToggle">
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-copy">
-                <strong data-i18n="dyslexia">Lecture facilitée</strong>
-                <span data-i18n="dyslexiaText">Espacement accru et police système plus lisible.</span>
-              </div>
-              <input class="toggle" type="checkbox" id="dyslexiaToggle">
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-copy">
-                <strong data-i18n="reduceMotion">Réduire les animations</strong>
-                <span data-i18n="reduceMotionText">Limite les transitions de l'interface.</span>
-              </div>
-              <input class="toggle" type="checkbox" id="motionToggle">
-            </div>
-
-            <div class="setting-row">
-              <div class="setting-copy">
-                <strong data-i18n="textSize">Taille du texte</strong>
-                <span id="scaleValue">100 %</span>
-              </div>
-              <input class="range" type="range" min="90" max="135" step="5" value="100" id="fontScale">
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="page" id="page-about">
-        <div class="section-head">
-          <div>
-            <h2 data-i18n="aboutTitle">À propos</h2>
-            <p data-i18n="aboutSub">Une web-app locale pour inspecter, modifier et nettoyer les métadonnées.</p>
-          </div>
-        </div>
-
-        <div class="grid cols-2">
-          <div class="card">
-            <h3>Metadata Editor</h3>
-            <p class="lead" style="font-size:.86rem" data-i18n="aboutText">
-              L'application détecte le type de fichier, génère un profil de champs pertinent et permet de télécharger une nouvelle copie lorsque le format peut être modifié de manière fiable directement dans le navigateur.
-            </p>
-            <div class="notice" data-i18n="browserLimits">
-              Les navigateurs n'offrent pas la même liberté qu'une application native : les formats vidéo, HEIC/RAW et certains conteneurs audio restent principalement consultables.
-            </div>
-          </div>
-
-          <div class="card">
-            <h3 data-i18n="supported">Formats principaux</h3>
-            <div class="grid cols-2" style="gap:8px">
-              <span class="badge">JPG / JPEG</span>
-              <span class="badge">PNG</span>
-              <span class="badge">PDF</span>
-              <span class="badge">MP3</span>
-              <span class="badge">DOCX</span>
-              <span class="badge">XLSX / XLSM</span>
-              <span class="badge">PPTX</span>
-              <span class="badge">Audio / vidéo</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </div>
-  </main>
-</div>
-
-<input type="file" id="fileInput" hidden>
-<input type="file" id="batchInput" multiple hidden>
-
-<div class="toast-zone" id="toastZone"></div>
-
-
-<script src="app-1.js"></script>
-<script src="app-2.js"></script>
-<script src="app-3.js"></script>
-<script src="app-4.js"></script>
-</body>
-</html>
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">ME</div><div class="brand-copy"><strong>Metadata Editor</strong><span>Portfolio tools</span></div></div>
+  <button class="button primary" id="openSide">+ <span data-fr="Ouvrir un fichier" data-en="Open file">Ouvrir un fichier</span></button>
+  <div class="nav">
+    <button class="nav-btn active" data-page="home"><span class="nav-icon">⌂</span><span data-fr="Vue générale" data-en="Overview">Vue générale</span></button>
+    <button class="nav-btn" data-page="editor"><span class="nav-icon">✎</span><span data-fr="Métadonnées" data-en="Metadata">Métadonnées</span></button>
+    <button class="nav-btn" data-page="raw"><span class="nav-icon">≡</span><span data-fr="Vue complète" data-en="Complete view">Vue complète</span></button>
+    <button class="nav-btn" data-page="batch"><span class="nav-icon">▦</span><span data-fr="Traitement par lot" data-en="Batch processing">Traitement par lot</span></button>
+    <button class="nav-btn" data-page="privacy"><span class="nav-icon">◉</span><span data-fr="Confidentialité" data-en="Privacy">Confidentialité</span></button>
+    <button class="nav-btn" data-page="history"><span class="nav-icon">↺</span><span data-fr="Historique" data-en="History">Historique</span></button>
+    <button class="nav-btn" data-page="settings"><span class="nav-icon">⚙</span><span data-fr="Personnalisation" data-en="Customization">Personnalisation</span></button>
+    <button class="nav-btn" data-page="about"><span class="nav-icon">i</span><span data-fr="À propos" data-en="About">À propos</span></button>
+  </div>
+  <div class="sidebar-footer"><div class="local-card"><strong>100 % local</strong><br><span data-fr="Les fichiers restent sur votre appareil et sont traités dans le navigateur." data-en="Files stay on your device and are processed in the browser.">Les fichiers restent sur votre appareil et sont traités dans le navigateur.</span></div><div class="version">Metadata Editor - Portfolio Edition</div></div>
+</aside>
+<main class="main">
+<header class="topbar"><button class="icon-btn" id="menuBtn">☰</button><div class="top-title"><strong id="topTitle">Metadata Editor</strong><span id="topSub">Aucun fichier sélectionné</span></div><div class="top-actions"><button class="button hide-mobile" data-go="settings" data-fr="Personnaliser" data-en="Customize">Personnaliser</button><button class="button primary" id="topDownload" disabled data-fr="Télécharger la copie" data-en="Download copy">Télécharger la copie</button></div></header>
+<div class="content">
+<section class="page active" id="page-home">
+  <div class="hero"><div><div class="eyebrow">● <span data-fr="Éditeur universel de métadonnées" data-en="Universal metadata editor">Éditeur universel de métadonnées</span></div><h1 data-fr="Vos fichiers, leurs métadonnées, un seul outil." data-en="Your files, their metadata, one tool.">Vos fichiers, leurs métadonnées, un seul outil.</h1><p class="lead" data-fr="Inspectez, modifiez, exportez ou nettoyez les métadonnées intégrées aux images, PDF, fichiers audio et documents Office. Le format est détecté automatiquement." data-en="Inspect, edit, export or clean metadata embedded in images, PDFs, audio files and Office documents. The format is detected automatically.">Inspectez, modifiez, exportez ou nettoyez les métadonnées intégrées aux images, PDF, fichiers audio et documents Office. Le format est détecté automatiquement.</p><div class="toolbar"><button class="button primary" id="openHero" data-fr="Choisir un fichier" data-en="Choose a file">Choisir un fichier</button><button class="button" data-go="privacy" data-fr="Analyser les données sensibles" data-en="Analyze sensitive data">Analyser les données sensibles</button></div></div><div class="dropzone" id="dropzone" tabindex="0"><div><div class="drop-icon">↥</div><strong data-fr="Glissez un fichier ici" data-en="Drop a file here">Glissez un fichier ici</strong><p data-fr="ou cliquez pour le sélectionner. Le fichier n'est jamais envoyé vers un serveur." data-en="or click to select it. The file is never uploaded to a server.">ou cliquez pour le sélectionner. Le fichier n'est jamais envoyé vers un serveur.</p><span class="badge">Images - PDF - Audio - Vidéo - Office</span></div></div></div>
+  <div class="section"><div class="section-head"><div><h2 data-fr="Fichier courant" data-en="Current file">Fichier courant</h2><p data-fr="Détection automatique du format et du moteur d'édition." data-en="Automatic format and editing engine detection.">Détection automatique du format et du moteur d'édition.</p></div></div><div class="card" id="currentFile"><div class="empty"><strong data-fr="Aucun fichier chargé" data-en="No file loaded">Aucun fichier chargé</strong></div></div></div>
+  <div class="section"><div class="grid cols-4"><div class="card stat"><strong id="statFields">0</strong><span data-fr="champs détectés" data-en="fields detected">champs détectés</span></div><div class="card stat"><strong id="statEditable">0</strong><span data-fr="champs éditables" data-en="editable fields">champs éditables</span></div><div class="card stat"><strong id="statSensitive">0</strong><span data-fr="éléments sensibles" data-en="sensitive items">éléments sensibles</span></div><div class="card stat"><strong>Local</strong><span data-fr="mode de traitement" data-en="processing mode">mode de traitement</span></div></div></div>
+</section>
+<section class="page" id="page-editor"><div class="section-head"><div><h2 data-fr="Métadonnées" data-en="Metadata">Métadonnées</h2><p id="editorSub" data-fr="Les champs adaptés au fichier apparaissent ici." data-en="File-specific fields appear here.">Les champs adaptés au fichier apparaissent ici.</p></div><span class="badge" id="engineBadge">-</span></div><div id="editorEmpty" class="card empty"><strong data-fr="Ouvrez un fichier pour commencer" data-en="Open a file to start">Ouvrez un fichier pour commencer</strong></div><div id="editorWorkspace" class="editor-layout" hidden><div class="card"><div id="fieldGrid" class="field-grid"></div><div class="toolbar"><button class="button primary" id="downloadBtn" data-fr="Télécharger le fichier modifié" data-en="Download edited file">Télécharger le fichier modifié</button><button class="button" id="resetBtn" data-fr="Rétablir les valeurs" data-en="Restore values">Rétablir les valeurs</button><button class="button" id="jsonBtn">JSON</button></div><div class="notice" id="compat" style="margin-top:14px"></div></div><div class="grid"><div class="card"><h3 data-fr="Aperçu" data-en="Preview">Aperçu</h3><div class="preview" id="preview"></div></div><div class="card"><h3 data-fr="Informations fichier" data-en="File information">Informations fichier</h3><dl id="infoList"></dl></div></div></div></section>
+<section class="page" id="page-raw"><div class="section-head"><div><h2 data-fr="Vue complète" data-en="Complete view">Vue complète</h2><p data-fr="Toutes les métadonnées détectées, y compris les propriétés en lecture seule." data-en="All detected metadata, including read-only properties.">Toutes les métadonnées détectées, y compris les propriétés en lecture seule.</p></div><input class="search" id="rawSearch" placeholder="Rechercher"></div><div class="card"><div id="rawEmpty" class="empty"><strong data-fr="Aucun fichier chargé" data-en="No file loaded">Aucun fichier chargé</strong></div><div style="overflow:auto"><table class="raw-table" id="rawTable" hidden><thead><tr><th>Champ</th><th>Valeur</th></tr></thead><tbody></tbody></table></div></div></section>
+<section class="page" id="page-batch"><div class="section-head"><div><h2 data-fr="Traitement par lot" data-en="Batch processing">Traitement par lot</h2><p data-fr="Créez un inventaire local de plusieurs fichiers." data-en="Create a local inventory of multiple files.">Créez un inventaire local de plusieurs fichiers.</p></div><button class="button primary" id="batchPick" data-fr="Ajouter des fichiers" data-en="Add files">Ajouter des fichiers</button></div><div class="grid cols-2"><div class="card"><h3>Fichiers</h3><div id="batchList" class="batch-list"></div></div><div class="card"><h3>Export</h3><div class="toolbar"><button class="button" id="batchJson">JSON</button><button class="button" id="batchCsv">CSV</button><button class="button danger" id="batchClear" data-fr="Vider" data-en="Clear">Vider</button></div><div class="notice" style="margin-top:14px" data-fr="L'analyse en lot reste locale." data-en="Batch analysis stays local.">L'analyse en lot reste locale.</div></div></div></section>
+<section class="page" id="page-privacy"><div class="section-head"><div><h2 data-fr="Confidentialité" data-en="Privacy">Confidentialité</h2><p data-fr="Repérez et retirez les métadonnées susceptibles d'identifier une personne, un appareil ou une localisation." data-en="Identify and remove metadata that may reveal a person, device or location.">Repérez et retirez les métadonnées susceptibles d'identifier une personne, un appareil ou une localisation.</p></div></div><div class="grid cols-2"><div class="card"><h3 data-fr="Éléments sensibles détectés" data-en="Sensitive items detected">Éléments sensibles détectés</h3><div id="privacyResults"></div></div><div class="card"><h3 data-fr="Nettoyage" data-en="Cleanup">Nettoyage</h3><div class="privacy-list"><label class="privacy-item"><input type="checkbox" id="cleanAuthor" checked><span><strong data-fr="Identité et auteur" data-en="Identity and author">Identité et auteur</strong><p>Auteur, artiste, créateur.</p></span></label><label class="privacy-item"><input type="checkbox" id="cleanLocation" checked><span><strong data-fr="Localisation" data-en="Location">Localisation</strong><p>Coordonnées GPS accessibles.</p></span></label><label class="privacy-item"><input type="checkbox" id="cleanSoftware" checked><span><strong data-fr="Logiciel et appareil" data-en="Software and device">Logiciel et appareil</strong><p>Logiciel, appareil, caméra.</p></span></label><label class="privacy-item"><input type="checkbox" id="cleanDates"><span><strong data-fr="Dates intégrées" data-en="Embedded dates">Dates intégrées</strong><p>Dates de création et de modification.</p></span></label></div><button class="button primary" id="cleanBtn" style="margin-top:14px" disabled data-fr="Télécharger une copie nettoyée" data-en="Download cleaned copy">Télécharger une copie nettoyée</button></div></div></section>
+<section class="page" id="page-history"><div class="section-head"><div><h2 data-fr="Historique local" data-en="Local history">Historique local</h2><p data-fr="Journal conservé uniquement dans ce navigateur." data-en="Log stored only in this browser.">Journal conservé uniquement dans ce navigateur.</p></div><button class="button" id="clearHistory" data-fr="Effacer" data-en="Clear">Effacer</button></div><div class="card"><div id="historyList" class="history-list"></div></div></section>
+<section class="page" id="page-settings"><div class="section-head"><div><h2 data-fr="Personnalisation" data-en="Customization">Personnalisation</h2><p data-fr="Réglages visuels inspirés du Portfolio." data-en="Visual settings inspired by the Portfolio.">Réglages visuels inspirés du Portfolio.</p></div></div><div class="grid cols-2"><div class="card"><h3 data-fr="Apparence" data-en="Appearance">Apparence</h3><div class="setting-row"><div class="setting-copy"><strong data-fr="Thème" data-en="Theme">Thème</strong><span>Clair / sombre</span></div><div class="segmented" id="themeSeg"><button data-value="light">Clair</button><button data-value="dark">Sombre</button></div></div><div class="setting-row"><div class="setting-copy"><strong data-fr="Palette" data-en="Palette">Palette</strong><span>Portfolio, cassis ou bleu</span></div><select id="palette"><option value="green">Vert</option><option value="cassis">Cassis</option><option value="blue">Bleu</option></select></div><div class="setting-row"><div class="setting-copy"><strong data-fr="Langue" data-en="Language">Langue</strong><span>FR / EN</span></div><div class="segmented" id="langSeg"><button data-value="fr">FR</button><button data-value="en">EN</button></div></div></div><div class="card"><h3 data-fr="Accessibilité" data-en="Accessibility">Accessibilité</h3><div class="setting-row"><div class="setting-copy"><strong data-fr="Contraste renforcé" data-en="High contrast">Contraste renforcé</strong></div><input type="checkbox" id="contrast"></div><div class="setting-row"><div class="setting-copy"><strong data-fr="Lecture facilitée" data-en="Reading aid">Lecture facilitée</strong></div><input type="checkbox" id="dyslexia"></div><div class="setting-row"><div class="setting-copy"><strong data-fr="Réduire les animations" data-en="Reduce motion">Réduire les animations</strong></div><input type="checkbox" id="motion"></div><div class="setting-row"><div class="setting-copy"><strong data-fr="Taille du texte" data-en="Text size">Taille du texte</strong><span id="scaleVal">100 %</span></div><input class="range" type="range" min="90" max="135" step="5" value="100" id="scale"></div></div></div></section>
+<section class="page" id="page-about"><div class="section-head"><div><h2 data-fr="À propos" data-en="About">À propos</h2><p>Metadata Editor</p></div></div><div class="grid cols-2"><div class="card"><h3>Metadata Editor</h3><p class="lead" data-fr="Une application web locale pour inspecter, modifier, exporter et nettoyer les métadonnées de fichiers courants." data-en="A local web application for inspecting, editing, exporting and cleaning metadata from common file formats.">Une application web locale pour inspecter, modifier, exporter et nettoyer les métadonnées de fichiers courants.</p><div class="notice">JPEG, PNG, PDF, MP3, DOCX, XLSX, XLSM et PPTX sont éditables. Les autres formats restent consultables lorsque le navigateur sait les prévisualiser.</div></div><div class="card"><h3 data-fr="Principe" data-en="Principle">Principe</h3><p class="lead" data-fr="Le fichier original n'est jamais écrasé. Toute modification génère une nouvelle copie à télécharger." data-en="The original file is never overwritten. Every edit generates a new copy to download.">Le fichier original n'est jamais écrasé. Toute modification génère une nouvelle copie à télécharger.</p></div></div></section>
+</div></main></div>
+<input type="file" id="fileInput" hidden><input type="file" id="batchInput" multiple hidden><div class="toast-zone" id="toasts"></div>
+<script>
+(()=>{"use strict";
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const S={file:null,buffer:null,type:null,meta:{},raw:{},original:{},editable:false,engine:"-",url:null,batch:[],lang:localStorage.getItem("md-lang")||"fr",history:JSON.parse(localStorage.getItem("md-history")||"[]")};
+const labels={fr:{title:"Titre",author:"Auteur",subject:"Sujet",keywords:"Mots-clés",description:"Description",creator:"Créateur",producer:"Producteur",artist:"Artiste",album:"Album",albumArtist:"Artiste de l'album",year:"Année / date",genre:"Genre",track:"Piste",comment:"Commentaire",copyright:"Copyright",software:"Logiciel",dateTime:"Date / heure",lastModifiedBy:"Dernière modification par",category:"Catégorie"},en:{title:"Title",author:"Author",subject:"Subject",keywords:"Keywords",description:"Description",creator:"Creator",producer:"Producer",artist:"Artist",album:"Album",albumArtist:"Album artist",year:"Year / date",genre:"Genre",track:"Track",comment:"Comment",copyright:"Copyright",software:"Software",dateTime:"Date / time",lastModifiedBy:"Last modified by",category:"Category"}};
+const fields={pdf:["title","author","subject","keywords","creator","producer"],jpeg:["title","description","artist","copyright","software","dateTime"],png:["title","description","author","copyright","software","dateTime","keywords"],mp3:["title","artist","album","albumArtist","year","genre","track","comment","copyright"],office:["title","subject","author","keywords","description","category","lastModifiedBy"],image:["title","description","author","copyright","software","dateTime"],audio:["title","artist","album","year","genre","comment","copyright"],video:["title","artist","description","copyright","dateTime"],generic:["title","description","author","keywords","comment","copyright"]};
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+const ext=n=>n.includes(".")?n.split(".").pop().toLowerCase():"";const size=b=>{let n=b,i=0,u=["B","KB","MB","GB"];while(n>=1024&&i<3){n/=1024;i++}return `${n.toFixed(i?1:0)} ${u[i]}`};
+const mime=f=>f.type||({pdf:"application/pdf",jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",mp3:"audio/mpeg",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",xlsm:"application/vnd.ms-excel.sheet.macroEnabled.12",pptx:"application/vnd.openxmlformats-officedocument.presentationml.presentation"}[ext(f.name)]||"application/octet-stream");
+const type=f=>{const e=ext(f.name),m=mime(f);if(e==="pdf")return"pdf";if(["jpg","jpeg"].includes(e))return"jpeg";if(e==="png")return"png";if(e==="mp3")return"mp3";if(["docx","xlsx","xlsm","pptx"].includes(e))return"office";if(m.startsWith("image/"))return"image";if(m.startsWith("audio/"))return"audio";if(m.startsWith("video/"))return"video";return"generic"};
+const date=v=>new Intl.DateTimeFormat(S.lang==="fr"?"fr-FR":"en-GB",{dateStyle:"medium",timeStyle:"short"}).format(new Date(v));
+function toast(a,b){const d=document.createElement("div");d.className="toast";d.innerHTML=`<strong>${esc(a)}</strong><span>${esc(b)}</span>`;$("#toasts").append(d);setTimeout(()=>d.remove(),3500)}
+function saveBlob(blob,name){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function outName(n,s){const i=n.lastIndexOf(".");return i<0?n+s:n.slice(0,i)+s+n.slice(i)}
+function history(action){S.history.unshift({action,file:S.file?.name||"",time:Date.now()});S.history=S.history.slice(0,50);localStorage.setItem("md-history",JSON.stringify(S.history));renderHistory()}
+function toBin(buf){const a=new Uint8Array(buf);let s="";for(let i=0;i<a.length;i+=32768)s+=String.fromCharCode(...a.subarray(i,Math.min(i+32768,a.length)));return s}function fromBin(s){const a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i)&255;return a}function ascii(a,o,n){return String.fromCharCode(...a.slice(o,o+n))}function u32(a,o){return ((a[o]<<24)>>>0)+(a[o+1]<<16)+(a[o+2]<<8)+a[o+3]}function dec(a){try{return new TextDecoder("utf-8").decode(a).replace(/\0/g,"").trim()}catch{return""}}function enc(s){return new TextEncoder().encode(s)}
+async function load(file){S.file=file;S.buffer=await file.arrayBuffer();S.type=type(file);S.meta={};S.raw={};S.editable=false;S.engine="Inspection navigateur";if(S.url)URL.revokeObjectURL(S.url);S.url=URL.createObjectURL(file);await parse();S.original=JSON.parse(JSON.stringify(S.meta));history(S.lang==="fr"?"Fichier chargé":"File loaded");renderAll();go("editor")}
+async function parse(){if(S.type==="pdf")await parsePDF();else if(S.type==="jpeg")await parseJPEG();else if(S.type==="png")await parsePNG();else if(S.type==="mp3")await parseMP3();else if(S.type==="office")await parseOffice();else fields[S.type].forEach(k=>S.meta[k]="");S.raw={"Type MIME":mime(S.file),"Taille":size(S.file.size),"Extension":ext(S.file.name)||"-","Dernière modification":date(S.file.lastModified),"Moteur":S.engine,...S.raw}}
+async function parsePDF(){const d=await PDFLib.PDFDocument.load(S.buffer,{updateMetadata:false});S.engine="PDF Info";S.editable=true;S.meta={title:d.getTitle()||"",author:d.getAuthor()||"",subject:d.getSubject()||"",keywords:(d.getKeywords()||"").replace(/^"|"$/g,""),creator:d.getCreator()||"",producer:d.getProducer()||""};S.raw={...S.meta,Pages:d.getPageCount()}}
+async function writePDF(m){const d=await PDFLib.PDFDocument.load(S.buffer,{updateMetadata:false});d.setTitle(m.title||"");d.setAuthor(m.author||"");d.setSubject(m.subject||"");d.setKeywords((m.keywords||"").split(/[,;]+/).map(x=>x.trim()).filter(Boolean));d.setCreator(m.creator||"");d.setProducer(m.producer||"");return new Blob([await d.save()],{type:"application/pdf"})}
+async function parseJPEG(){S.engine="EXIF JPEG";S.editable=true;let x={};try{x=piexif.load(toBin(S.buffer))}catch{}const z=x["0th"]||{},e=x.Exif||{},g=x.GPS||{},v=(o,k)=>o[k]??"";S.meta={title:"",description:String(v(z,piexif.ImageIFD.ImageDescription)||""),artist:String(v(z,piexif.ImageIFD.Artist)||""),copyright:String(v(z,piexif.ImageIFD.Copyright)||""),software:String(v(z,piexif.ImageIFD.Software)||""),dateTime:String(v(e,piexif.ExifIFD.DateTimeOriginal)||v(z,piexif.ImageIFD.DateTime)||"")};S.raw={...S.meta};const make=v(z,piexif.ImageIFD.Make),model=v(z,piexif.ImageIFD.Model);if(make||model)S.raw.Appareil=`${make||""} ${model||""}`.trim();if(Object.keys(g).length)S.raw.GPS="EXIF GPS"}
+async function writeJPEG(m,opt={}){let x;const b=toBin(S.buffer);try{x=piexif.load(b)}catch{x={"0th":{},Exif:{},GPS:{},Interop:{},"1st":{},thumbnail:null}};x["0th"]=x["0th"]||{};x.Exif=x.Exif||{};x.GPS=x.GPS||{};const set=(o,k,v)=>v?o[k]=v:delete o[k];set(x["0th"],piexif.ImageIFD.ImageDescription,m.description||"");set(x["0th"],piexif.ImageIFD.Artist,m.artist||"");set(x["0th"],piexif.ImageIFD.Copyright,m.copyright||"");set(x["0th"],piexif.ImageIFD.Software,m.software||"");set(x.Exif,piexif.ExifIFD.DateTimeOriginal,m.dateTime||"");if(opt.author){delete x["0th"][piexif.ImageIFD.Artist];delete x["0th"][piexif.ImageIFD.Copyright]}if(opt.location)x.GPS={};if(opt.software){delete x["0th"][piexif.ImageIFD.Software];delete x["0th"][piexif.ImageIFD.Make];delete x["0th"][piexif.ImageIFD.Model]}if(opt.dates){delete x["0th"][piexif.ImageIFD.DateTime];delete x.Exif[piexif.ExifIFD.DateTimeOriginal];delete x.Exif[piexif.ExifIFD.DateTimeDigitized]}return new Blob([fromBin(piexif.insert(piexif.dump(x),b))],{type:"image/jpeg"})}
+function pngChunks(buf){const a=new Uint8Array(buf);let p=8,r=[];while(p+12<=a.length){const l=u32(a,p),t=ascii(a,p+4,4),d=a.slice(p+8,p+8+l);r.push({t,d,p,l});p+=12+l;if(t==="IEND")break}return r}function crc(a){let c=0xffffffff;for(const b of a){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return(c^0xffffffff)>>>0}function U(n){return new Uint8Array([(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255])}function chunk(t,d){const tb=enc(t),z=new Uint8Array(tb.length+d.length);z.set(tb);z.set(d,tb.length);const o=new Uint8Array(12+d.length);o.set(U(d.length));o.set(tb,4);o.set(d,8);o.set(U(crc(z)),8+d.length);return o}function textChunk(k,v){const a=enc(k),b=enc(v),d=new Uint8Array(a.length+1+b.length);d.set(a);d[a.length]=0;d.set(b,a.length+1);return chunk("tEXt",d)}
+async function parsePNG(){S.engine="PNG text chunks";S.editable=true;const c=pngChunks(S.buffer),tx={};for(const q of c)if(q.t==="tEXt"){const z=q.d.indexOf(0);if(z>=0)tx[dec(q.d.slice(0,z))]=dec(q.d.slice(z+1))}S.meta={title:tx.Title||"",description:tx.Description||"",author:tx.Author||tx.Artist||"",copyright:tx.Copyright||"",software:tx.Software||"",dateTime:tx["Creation Time"]||tx.DateTime||"",keywords:tx.Keywords||""};S.raw={...tx}}
+async function writePNG(m,opt={}){const a=new Uint8Array(S.buffer),c=pngChunks(S.buffer),managed=new Set(["Title","Description","Author","Artist","Copyright","Software","Creation Time","DateTime","Keywords"]),parts=[a.slice(0,8)],vals={Title:m.title||"",Description:m.description||"",Author:opt.author?"":m.author||"",Copyright:opt.author?"":m.copyright||"",Software:opt.software?"":m.software||"","Creation Time":opt.dates?"":m.dateTime||"",Keywords:m.keywords||""};for(const q of c){if(q.t==="tEXt"){const z=q.d.indexOf(0),k=z>=0?dec(q.d.slice(0,z)):"";if(managed.has(k))continue}if(q.t==="IEND")for(const[k,v]of Object.entries(vals))if(v)parts.push(textChunk(k,v));parts.push(a.slice(q.p,q.p+12+q.l))}return new Blob(parts,{type:"image/png"})}
+function ss(a,b,c,d){return(a<<21)|(b<<14)|(c<<7)|d}function SS(n){return new Uint8Array([(n>>21)&127,(n>>14)&127,(n>>7)&127,n&127])}function frame(id,v){const t=enc(v),p=new Uint8Array(1+t.length);p[0]=3;p.set(t,1);const h=new Uint8Array(10);h.set(enc(id));h.set(U(p.length),4);const o=new Uint8Array(10+p.length);o.set(h);o.set(p,10);return o}function id3Text(d){if(!d.length)return"";try{return new TextDecoder(d[0]===3?"utf-8":"iso-8859-1").decode(d.slice(1)).replace(/\0/g,"").trim()}catch{return dec(d.slice(1))}}
+async function parseMP3(){S.engine="ID3v2";S.editable=true;const a=new Uint8Array(S.buffer),m={title:"",artist:"",album:"",albumArtist:"",year:"",genre:"",track:"",comment:"",copyright:""},raw={};if(ascii(a,0,3)==="ID3"){const ver=a[3],end=Math.min(a.length,10+ss(a[6],a[7],a[8],a[9])),map={TIT2:"title",TPE1:"artist",TALB:"album",TPE2:"albumArtist",TDRC:"year",TYER:"year",TCON:"genre",TRCK:"track",TCOP:"copyright"};let p=10;while(p+10<=end){const id=ascii(a,p,4);if(!/^[A-Z0-9]{4}$/.test(id))break;const n=ver===4?ss(a[p+4],a[p+5],a[p+6],a[p+7]):u32(a,p+4);if(n<=0||p+10+n>end)break;const d=a.slice(p+10,p+10+n);if(map[id]){m[map[id]]=id3Text(d);raw[id]=m[map[id]]}p+=10+n}}S.meta=m;S.raw=raw}
+async function writeMP3(m,opt={}){const a=new Uint8Array(S.buffer);let start=0;if(ascii(a,0,3)==="ID3")start=Math.min(a.length,10+ss(a[6],a[7],a[8],a[9]));const fs=[],add=(id,k)=>{let v=m[k]||"";if(opt.author&&["artist","albumArtist","copyright"].includes(k))v="";if(opt.dates&&k==="year")v="";if(v)fs.push(frame(id,v))};add("TIT2","title");add("TPE1","artist");add("TALB","album");add("TPE2","albumArtist");add("TDRC","year");add("TCON","genre");add("TRCK","track");add("TCOP","copyright");const n=fs.reduce((s,f)=>s+f.length,0),h=new Uint8Array(10);h.set(enc("ID3"));h[3]=3;h.set(SS(n),6);const o=new Uint8Array(10+n+a.length-start);let p=0;o.set(h,p);p+=10;for(const f of fs){o.set(f,p);p+=f.length}o.set(a.slice(start),p);return new Blob([o],{type:"audio/mpeg"})}
+async function parseOffice(){const z=await JSZip.loadAsync(S.buffer);S.engine="Propriétés OpenXML";S.editable=true;const m={title:"",subject:"",author:"",keywords:"",description:"",category:"",lastModifiedBy:""},f=z.file("docProps/core.xml");if(f){const x=new DOMParser().parseFromString(await f.async("text"),"application/xml"),r=n=>x.getElementsByTagName(n)[0]?.textContent||"";m.title=r("dc:title");m.subject=r("dc:subject");m.author=r("dc:creator");m.keywords=r("cp:keywords");m.description=r("dc:description");m.category=r("cp:category");m.lastModifiedBy=r("cp:lastModifiedBy")}S.meta=m;S.raw={...m}}
+function xmlSet(x,n,v){let e=x.getElementsByTagName(n)[0];if(!e&&v){e=x.createElement(n);x.documentElement.appendChild(e)}if(e)e.textContent=v||""}
+async function writeOffice(m,opt={}){const z=await JSZip.loadAsync(S.buffer),f=z.file("docProps/core.xml");if(f){const x=new DOMParser().parseFromString(await f.async("text"),"application/xml");xmlSet(x,"dc:title",m.title);xmlSet(x,"dc:subject",m.subject);xmlSet(x,"dc:creator",opt.author?"":m.author);xmlSet(x,"cp:keywords",m.keywords);xmlSet(x,"dc:description",m.description);xmlSet(x,"cp:category",m.category);xmlSet(x,"cp:lastModifiedBy",opt.author?"":m.lastModifiedBy);if(opt.dates){xmlSet(x,"dcterms:created","");xmlSet(x,"dcterms:modified","")}z.file("docProps/core.xml",new XMLSerializer().serializeToString(x))}return new Blob([await z.generateAsync({type:"uint8array"})],{type:mime(S.file)})}
+function current(){const m={};$$('[data-key]').forEach(e=>m[e.dataset.key]=e.value);return m}async function generate(opt={}){const m=current();if(S.type==="pdf")return writePDF(m);if(S.type==="jpeg")return writeJPEG(m,opt);if(S.type==="png")return writePNG(m,opt);if(S.type==="mp3")return writeMP3(m,opt);if(S.type==="office")return writeOffice(m,opt);throw new Error(S.lang==="fr"?"Ce format est en lecture seule.":"This format is read-only.")}
+function sensitive(){if(!S.file)return[];const a={...S.raw,...S.meta},rules=["author","artist","creator","gps","latitude","longitude","location","software","appareil","camera","model","make","date","time","created","modified"],r=[];for(const[k,v]of Object.entries(a))if(v&&rules.some(x=>String(k).toLowerCase().includes(x)))r.push([k,v]);return r}
+function renderEditor(){const ok=!!S.file;$("#editorEmpty").hidden=ok;$("#editorWorkspace").hidden=!ok;if(!ok)return;$("#engineBadge").textContent=S.engine;const L=labels[S.lang],ks=fields[S.type]||fields.generic;$("#fieldGrid").innerHTML=ks.map(k=>`<div class="field ${["description","comment","keywords"].includes(k)?"full":""}"><label>${esc(L[k]||k)}</label>${["description","comment","keywords"].includes(k)?`<textarea data-key="${k}" ${S.editable?"":"disabled"}>${esc(S.meta[k]||"")}</textarea>`:`<input data-key="${k}" value="${esc(S.meta[k]||"")}" ${S.editable?"":"disabled"}>`}</div>`).join("");$("#downloadBtn").disabled=$("#topDownload").disabled=$("#cleanBtn").disabled=!S.editable;$("#compat").className="notice"+(S.editable?"":" warn");$("#compat").textContent=S.editable?(S.lang==="fr"?"Ce format peut être réécrit directement dans le navigateur. Le fichier original n'est jamais écrasé.":"This format can be rewritten in the browser. The original is never overwritten."):(S.lang==="fr"?"Ce format peut être consulté mais reste en lecture seule dans le navigateur.":"This format can be inspected but is read-only in the browser.");renderPreview();renderInfo()}
+function renderPreview(){const m=mime(S.file),p=$("#preview");if(m.startsWith("image/"))p.innerHTML=`<img src="${S.url}" alt="">`;else if(m.startsWith("audio/"))p.innerHTML=`<audio controls src="${S.url}"></audio>`;else if(m.startsWith("video/"))p.innerHTML=`<video controls src="${S.url}"></video>`;else if(S.type==="pdf")p.innerHTML=`<iframe src="${S.url}" title="PDF"></iframe>`;else p.innerHTML=`<div class="empty"><strong>${esc(S.file.name)}</strong></div>`}
+function renderInfo(){const d={"Type MIME":mime(S.file),"Taille":size(S.file.size),"Extension":ext(S.file.name)||"-","Dernière modification":date(S.file.lastModified),"Moteur":S.engine,"Édition":S.editable?"Oui":"Non"};$("#infoList").innerHTML=Object.entries(d).map(([k,v])=>`<div class="kv"><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}
+function renderRaw(){const e=$("#rawEmpty"),t=$("#rawTable"),b=t.querySelector("tbody");if(!S.file){e.hidden=false;t.hidden=true;return}e.hidden=true;t.hidden=false;const q=$("#rawSearch").value.toLowerCase();b.innerHTML=Object.entries({...S.raw,...S.meta}).filter(([k,v])=>!q||`${k} ${v}`.toLowerCase().includes(q)).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join("")}
+function renderCurrent(){const b=$("#currentFile");if(!S.file){b.innerHTML='<div class="empty"><strong>Aucun fichier chargé</strong></div>';return}b.innerHTML=`<div class="file-card"><div class="file-icon">${esc(ext(S.file.name).slice(0,4).toUpperCase()||"?")}</div><div class="file-meta"><strong>${esc(S.file.name)}</strong><span>${esc(size(S.file.size))} - ${esc(mime(S.file))} - ${esc(S.engine)}</span></div><span class="badge ${S.editable?"":"warn"}">${S.editable?"Édition navigateur":"Lecture seule"}</span></div>`}
+function renderPrivacy(){const b=$("#privacyResults");if(!S.file){b.innerHTML='<div class="empty">Aucun fichier chargé</div>';return}const r=sensitive();b.innerHTML=r.length?r.map(([k,v])=>`<div class="sensitive-row"><strong>${esc(k)}</strong><span>${esc(v)}</span></div>`).join(""):'<div class="notice">Aucune donnée sensible évidente détectée.</div>'}
+function renderHistory(){const b=$("#historyList");b.innerHTML=S.history.length?S.history.map(x=>`<div class="history-item"><strong>${esc(x.action)}${x.file?` - ${esc(x.file)}`:""}</strong><span>${esc(date(x.time))}</span></div>`).join(""):'<div class="empty">-</div>'}
+function renderBatch(){const b=$("#batchList");b.innerHTML=S.batch.length?S.batch.map((f,i)=>`<div class="batch-row"><span class="badge">${esc(ext(f.name).toUpperCase())}</span><div><strong>${esc(f.name)}</strong><span>${esc(size(f.size))} - ${esc(mime(f))}</span></div><button class="button small" data-rm="${i}">×</button></div>`).join(""):'<div class="empty">Aucun fichier</div>';$$('[data-rm]').forEach(x=>x.onclick=()=>{S.batch.splice(+x.dataset.rm,1);renderBatch()})}
+function renderHeader(){if(S.file){$("#topTitle").textContent=S.file.name;$("#topSub").textContent=`${S.type.toUpperCase()} - ${S.engine}`}else{$("#topTitle").textContent="Metadata Editor";$("#topSub").textContent=S.lang==="fr"?"Aucun fichier sélectionné":"No file selected"}}
+function renderAll(){renderHeader();renderCurrent();renderEditor();renderRaw();renderPrivacy();renderHistory();renderBatch();$("#statFields").textContent=S.file?Object.values({...S.raw,...S.meta}).filter(Boolean).length:0;$("#statEditable").textContent=S.file&&S.editable?(fields[S.type]||[]).length:0;$("#statSensitive").textContent=sensitive().length}
+function go(p){$$('.page').forEach(x=>x.classList.toggle('active',x.id===`page-${p}`));$$('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===p));document.body.classList.remove('sidebar-open');if(p==='raw')renderRaw();if(p==='privacy')renderPrivacy()}
+function language(){document.documentElement.lang=S.lang;$$('[data-fr]').forEach(e=>e.textContent=e.dataset[S.lang]);$$('#langSeg button').forEach(b=>b.classList.toggle('active',b.dataset.value===S.lang));renderAll()}
+function prefs(){const th=localStorage.getItem('md-theme')||'light',pa=localStorage.getItem('md-palette')||'green',co=localStorage.getItem('md-contrast')==='high',dy=localStorage.getItem('md-dyslexia')==='on',mo=localStorage.getItem('md-motion')==='reduced',sc=localStorage.getItem('md-scale')||'100';document.documentElement.dataset.theme=th;document.documentElement.dataset.palette=pa;document.documentElement.dataset.contrast=co?'high':'normal';document.documentElement.dataset.dyslexia=dy?'on':'off';document.documentElement.dataset.motion=mo?'reduced':'normal';document.documentElement.style.setProperty('--font-scale',+sc/100);$$('#themeSeg button').forEach(b=>b.classList.toggle('active',b.dataset.value===th));$('#palette').value=pa;$('#contrast').checked=co;$('#dyslexia').checked=dy;$('#motion').checked=mo;$('#scale').value=sc;$('#scaleVal').textContent=sc+' %'}
+async function download(clean=false){try{const opt=clean?{author:$('#cleanAuthor').checked,location:$('#cleanLocation').checked,software:$('#cleanSoftware').checked,dates:$('#cleanDates').checked}:{};const blob=await generate(opt);saveBlob(blob,outName(S.file.name,clean?'_clean':'_metadata'));history(clean?(S.lang==='fr'?'Copie nettoyée':'Cleaned copy'):(S.lang==='fr'?'Copie modifiée':'Edited copy'));toast('Metadata Editor',S.lang==='fr'?'Téléchargement prêt.':'Download ready.')}catch(e){toast('Erreur',e.message)}}
+function exportJSON(){if(!S.file)return;saveBlob(new Blob([JSON.stringify({file:{name:S.file.name,size:S.file.size,mime:mime(S.file)},type:S.type,engine:S.engine,editable:S.editable,metadata:{...S.raw,...current()}},null,2)],{type:'application/json'}),S.file.name+'.metadata.json');history('Export JSON')}
+function batchData(){return S.batch.map(f=>({name:f.name,extension:ext(f.name),mime:mime(f),size:f.size,lastModified:f.lastModified,type:type(f)}))}
+const chooser=()=>$('#fileInput').click();$('#openSide').onclick=$('#openHero').onclick=chooser;$('#dropzone').onclick=chooser;$('#fileInput').onchange=e=>{if(e.target.files[0])load(e.target.files[0]);e.target.value=''};['dragenter','dragover'].forEach(n=>$('#dropzone').addEventListener(n,e=>{e.preventDefault();$('#dropzone').classList.add('drag')}));['dragleave','drop'].forEach(n=>$('#dropzone').addEventListener(n,e=>{e.preventDefault();$('#dropzone').classList.remove('drag')}));$('#dropzone').addEventListener('drop',e=>{if(e.dataTransfer.files[0])load(e.dataTransfer.files[0])});$$('.nav-btn').forEach(b=>b.onclick=()=>go(b.dataset.page));$$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));$('#menuBtn').onclick=()=>document.body.classList.toggle('sidebar-open');$('#downloadBtn').onclick=$('#topDownload').onclick=()=>download(false);$('#cleanBtn').onclick=()=>download(true);$('#resetBtn').onclick=()=>{S.meta=JSON.parse(JSON.stringify(S.original));renderEditor()};$('#jsonBtn').onclick=exportJSON;$('#rawSearch').oninput=renderRaw;$('#batchPick').onclick=()=>$('#batchInput').click();$('#batchInput').onchange=e=>{S.batch.push(...e.target.files);e.target.value='';renderBatch()};$('#batchJson').onclick=()=>saveBlob(new Blob([JSON.stringify(batchData(),null,2)],{type:'application/json'}),'metadata-batch.json');$('#batchCsv').onclick=()=>{const d=batchData(),h=['name','extension','mime','size','lastModified','type'];saveBlob(new Blob(['\ufeff'+[h.join(';'),...d.map(r=>h.map(k=>`"${String(r[k]??'').replaceAll('"','""')}"`).join(';'))].join('\n')],{type:'text/csv'}),'metadata-batch.csv')};$('#batchClear').onclick=()=>{S.batch=[];renderBatch()};$('#clearHistory').onclick=()=>{S.history=[];localStorage.removeItem('md-history');renderHistory()};$$('#themeSeg button').forEach(b=>b.onclick=()=>{document.documentElement.dataset.theme=b.dataset.value;localStorage.setItem('md-theme',b.dataset.value);prefs()});$('#palette').onchange=e=>{document.documentElement.dataset.palette=e.target.value;localStorage.setItem('md-palette',e.target.value)};$$('#langSeg button').forEach(b=>b.onclick=()=>{S.lang=b.dataset.value;localStorage.setItem('md-lang',S.lang);language()});$('#contrast').onchange=e=>{localStorage.setItem('md-contrast',e.target.checked?'high':'normal');prefs()};$('#dyslexia').onchange=e=>{localStorage.setItem('md-dyslexia',e.target.checked?'on':'off');prefs()};$('#motion').onchange=e=>{localStorage.setItem('md-motion',e.target.checked?'reduced':'normal');prefs()};$('#scale').oninput=e=>{localStorage.setItem('md-scale',e.target.value);prefs()};prefs();language();renderAll();
+})();
+</script>
+</body></html>
