@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="fr" data-theme="light" data-palette="green" data-contrast="normal" data-dyslexia="off" data-motion="normal">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#3f6758">
+<meta name="description" content="Metadata Editor - inspect and edit file metadata locally in your browser.">
+<title>Metadata Editor</title>
+
+<!-- Libraries loaded from CDN. The files themselves remain local in the browser. -->
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">ME</div>
+      <div class="brand-copy">
+        <strong>Metadata Editor</strong>
+        <span data-i18n="brandSub">Portfolio tools</span>
+      </div>
+    </div>
+
+    <button class="button primary" id="openSidebar" data-i18n="openFile">+ Ouvrir un fichier</button>
+
+    <nav>
+      <button class="nav-btn active" data-page="home"><span class="nav-icon">⌂</span><span data-i18n="navHome">Vue générale</span></button>
+      <button class="nav-btn" data-page="editor"><span class="nav-icon">✎</span><span data-i18n="navEditor">Métadonnées</span></button>
+      <button class="nav-btn" data-page="raw"><span class="nav-icon">≡</span><span data-i18n="navRaw">Vue complète</span></button>
+      <button class="nav-btn" data-page="batch"><span class="nav-icon">▦</span><span data-i18n="navBatch">Traitement par lot</span></button>
+      <button class="nav-btn" data-page="privacy"><span class="nav-icon">◉</span><span data-i18n="navPrivacy">Confidentialité</span></button>
+      <button class="nav-btn" data-page="history"><span class="nav-icon">↺</span><span data-i18n="navHistory">Historique</span></button>
+      <button class="nav-btn" data-page="settings"><span class="nav-icon">⚙</span><span data-i18n="navSettings">Personnalisation</span></button>
+      <button class="nav-btn" data-page="about"><span class="nav-icon">i</span><span data-i18n="navAbout">À propos</span></button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="local-card">
+        <strong data-i18n="localOnly">100 % local</strong><br>
+        <span data-i18n="localOnlyText">Les fichiers sont traités dans votre navigateur et ne sont jamais envoyés vers un serveur.</span>
+      </div>
+      <div class="version">Metadata Editor · HTML V1</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="menuBtn" aria-label="Menu">☰</button>
+
+      <div class="top-title">
+        <strong id="topTitle">Metadata Editor</strong>
+        <span id="topSubtitle" data-i18n="noFile">Aucun fichier sélectionné</span>
+      </div>
+
+      <div class="top-actions">
+        <button class="button hide-mobile" id="quickSettings" data-i18n="customize">Personnaliser</button>
+        <button class="button primary" id="topDownload" disabled data-i18n="downloadEdited">Télécharger le fichier modifié</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <section class="page active" id="page-home">
+        <div class="hero">
+          <div>
+            <div class="eyebrow">● <span data-i18n="heroEyebrow">Éditeur universel de métadonnées</span></div>
+            <h1 data-i18n="heroTitle">Vos fichiers, leurs métadonnées, un seul outil.</h1>
+            <p class="lead" data-i18n="heroLead">
+              Inspectez et modifiez les informations intégrées aux images, PDF, fichiers audio et documents Office.
+              Le type de fichier est détecté automatiquement et l'interface s'adapte aux champs réellement pertinents.
+            </p>
+            <div class="toolbar">
+              <button class="button primary" id="openHero" data-i18n="chooseFile">Choisir un fichier</button>
+              <button class="button" data-page-jump="privacy" data-i18n="privacyAudit">Analyser les données sensibles</button>
+            </div>
+          </div>
+
+          <div class="dropzone" id="dropzone" tabindex="0">
+            <div>
+              <div class="drop-icon">↥</div>
+              <strong data-i18n="dropTitle">Glissez un fichier ici</strong>
+              <p data-i18n="dropText">ou cliquez pour le sélectionner. Le fichier reste sur votre appareil.</p>
+              <span class="badge" data-i18n="formats">Images · PDF · Audio · Vidéo · Office</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2 data-i18n="currentFile">Fichier courant</h2>
+              <p data-i18n="currentFileSub">Détection automatique du format et du moteur d'édition.</p>
+            </div>
+          </div>
+          <div class="card" id="currentFileCard">
+            <div class="empty">
+              <strong data-i18n="nothingLoaded">Aucun fichier chargé</strong>
+              <span data-i18n="nothingLoadedText">Ouvrez un fichier pour afficher son profil de métadonnées.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="grid cols-4">
+            <div class="card stat"><strong id="statFields">0</strong><span data-i18n="statFields">champs détectés</span></div>
+            <div class="card stat"><strong id="statEditable">0</strong><span data-i18n="statEditable">champs éditables</span></div>
+            <div class="card stat"><strong id="statSensitive">0</strong><span data-i18n="statSensitive">éléments sensibles</span></div>
+            <div class="card stat"><strong>Local</strong><span data-i18n="statMode">mode de traitement</span></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="grid cols-3">
+            <div class="card">
+              <h3 data-i18n="smartTitle">Adaptatif</h3>
+              <p class="lead" style="font-size:.84rem" data-i18n="smartText">Les champs changent selon le format : EXIF pour les images, propriétés documentaires pour les PDF et Office, ID3 pour les MP3.</p>
+            </div>
+            <div class="card">
+              <h3 data-i18n="privacyTitle">Confidentiel</h3>
+              <p class="lead" style="font-size:.84rem" data-i18n="privacyText">Le traitement est effectué dans le navigateur. Aucun fichier n'est téléversé par l'application.</p>
+            </div>
+            <div class="card">
+              <h3 data-i18n="safeTitle">Réversible</h3>
+              <p class="lead" style="font-size:.84rem" data-i18n="safeText">Le fichier original n'est jamais écrasé. Toute modification produit une nouvelle copie à télécharger.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-editor">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="editorTitle">Métadonnées</h2>
+            <p id="editorSubtitle" data-i18n="editorSub">Les champs adaptés au fichier apparaîtront ici.</p>
+          </div>
+          <span class="badge" id="engineBadge">-</span>
+        </div>
+
+        <div id="editorEmpty" class="card empty">
+          <strong data-i18n="openToEdit">Ouvrez un fichier pour commencer</strong>
+          <span data-i18n="openToEditText">L'éditeur déterminera automatiquement les propriétés disponibles.</span>
+        </div>
+
+        <div id="editorWorkspace" class="editor-layout" hidden>
+          <div class="card">
+            <div id="fieldGrid" class="field-grid"></div>
+
+            <div class="toolbar">
+              <button class="button primary" id="downloadEdited" data-i18n="downloadEdited">Télécharger le fichier modifié</button>
+              <button class="button" id="resetFields" data-i18n="resetFields">Rétablir les valeurs</button>
+              <button class="button" id="exportJson" data-i18n="exportJson">Exporter JSON</button>
+            </div>
+
+            <div class="notice" id="compatNotice" style="margin-top:14px"></div>
+          </div>
+
+          <div class="grid">
+            <div class="card">
+              <h3 data-i18n="previewTitle">Aperçu</h3>
+              <div class="preview" id="preview"></div>
+            </div>
+
+            <div class="card">
+              <h3 data-i18n="fileInfo">Informations fichier</h3>
+              <dl id="fileInfoList"></dl>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-raw">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="rawTitle">Vue complète</h2>
+            <p data-i18n="rawSub">Toutes les métadonnées détectées, y compris les propriétés en lecture seule.</p>
+          </div>
+          <input class="search" id="rawSearch" style="max-width:330px" data-i18n-placeholder="searchMetadata" placeholder="Rechercher une métadonnée">
+        </div>
+
+        <div class="card">
+          <div id="rawEmpty" class="empty">
+            <strong data-i18n="nothingLoaded">Aucun fichier chargé</strong>
+          </div>
+
+          <div style="overflow:auto">
+            <table class="raw-table" id="rawTable" hidden>
+              <thead>
+                <tr>
+                  <th data-i18n="field">Champ</th>
+                  <th data-i18n="value">Valeur</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-batch">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="batchTitle">Traitement par lot</h2>
+            <p data-i18n="batchSub">Chargez plusieurs fichiers pour créer un inventaire de métadonnées.</p>
+          </div>
+          <button class="button primary" id="batchPick" data-i18n="addFiles">Ajouter des fichiers</button>
+        </div>
+
+        <div class="grid cols-2">
+          <div class="card">
+            <h3 data-i18n="batchFiles">Fichiers</h3>
+            <div id="batchList" class="batch-list">
+              <div class="empty"><span data-i18n="batchEmpty">Aucun fichier dans le lot.</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 data-i18n="batchActions">Actions</h3>
+            <div class="settings-group">
+              <button class="button" id="batchJson" data-i18n="exportManifest">Exporter l'inventaire JSON</button>
+              <button class="button" id="batchCsv" data-i18n="exportCsv">Exporter l'inventaire CSV</button>
+              <button class="button danger" id="batchClear" data-i18n="clearBatch">Vider la liste</button>
+              <div class="notice" data-i18n="batchNote">L'analyse en lot reste locale. Aucun fichier n'est envoyé vers GitHub ou un serveur externe.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-privacy">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="privacyAuditTitle">Confidentialité</h2>
+            <p data-i18n="privacyAuditSub">Repérez rapidement les informations susceptibles d'identifier une personne, un appareil, un logiciel ou une localisation.</p>
+          </div>
+        </div>
+
+        <div class="grid cols-2">
+          <div class="card">
+            <h3 data-i18n="sensitiveDetected">Éléments sensibles détectés</h3>
+            <div id="privacyResults">
+              <div class="empty"><span data-i18n="privacyEmpty">Chargez un fichier pour lancer l'analyse.</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 data-i18n="privacyActions">Nettoyage</h3>
+
+            <div class="privacy-list">
+              <label class="privacy-item">
+                <input type="checkbox" id="cleanAuthor" checked>
+                <span>
+                  <strong data-i18n="cleanAuthor">Identité et auteur</strong>
+                  <p data-i18n="cleanAuthorText">Auteur, artiste, créateur, dernière modification par.</p>
+                </span>
+              </label>
+
+              <label class="privacy-item">
+                <input type="checkbox" id="cleanLocation" checked>
+                <span>
+                  <strong data-i18n="cleanLocation">Localisation</strong>
+                  <p data-i18n="cleanLocationText">Coordonnées GPS et informations géographiques accessibles.</p>
+                </span>
+              </label>
+
+              <label class="privacy-item">
+                <input type="checkbox" id="cleanSoftware" checked>
+                <span>
+                  <strong data-i18n="cleanSoftware">Logiciels et appareil</strong>
+                  <p data-i18n="cleanSoftwareText">Logiciel, modèle d'appareil, caméra et outils de production.</p>
+                </span>
+              </label>
+
+              <label class="privacy-item">
+                <input type="checkbox" id="cleanDates">
+                <span>
+                  <strong data-i18n="cleanDates">Dates intégrées</strong>
+                  <p data-i18n="cleanDatesText">Dates de création et de modification présentes dans les métadonnées.</p>
+                </span>
+              </label>
+            </div>
+
+            <button class="button primary" id="applyPrivacy" style="margin-top:14px" disabled data-i18n="prepareClean">Préparer une copie nettoyée</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-history">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="historyTitle">Historique local</h2>
+            <p data-i18n="historySub">Journal des opérations conservé uniquement dans ce navigateur.</p>
+          </div>
+          <button class="button" id="clearHistory" data-i18n="clearHistory">Effacer l'historique</button>
+        </div>
+        <div class="card">
+          <div id="historyList" class="history-list"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="settingsTitle">Personnalisation</h2>
+            <p data-i18n="settingsSub">Les préférences sont mémorisées localement dans le navigateur.</p>
+          </div>
+        </div>
+
+        <div class="grid cols-2">
+          <div class="card settings-group">
+            <h3 data-i18n="appearance">Apparence</h3>
+
+            <div class="setting-row">
+              <div class="setting-copy">
+                <strong data-i18n="theme">Thème</strong>
+                <span data-i18n="themeText">Clair ou sombre.</span>
+              </div>
+              <div class="segmented" id="themeSegment">
+                <button data-value="light" class="active" data-i18n="light">Clair</button>
+                <button data-value="dark" data-i18n="dark">Sombre</button>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-copy">
+                <strong data-i18n="palette">Palette</strong>
+                <span data-i18n="paletteText">Vert Portfolio, cassis ou bleu.</span>
+              </div>
+              <select id="paletteSelect">
+                <option value="green">Vert</option>
+                <option value="cassis">Cassis</option>
+                <option value="blue">Bleu</option>
+              </select>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-copy">
+                <strong data-i18n="language">Langue</strong>
+                <span data-i18n="languageText">Interface française ou anglaise.</span>
+              </div>
+              <div class="segmented" id="langSegment">
+                <button data-value="fr" class="active">FR</button>
+                <button data-value="en">EN</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card settings-group">
+            <h3 data-i18n="accessibility">Accessibilité</h3>
+
+            <div class="setting-row">
+              <div class="setting-copy">
+                <strong data-i18n="highContrast">Contraste renforcé</strong>
+                <span data-i18n="highContrastText">Accentue les séparations et les éléments interactifs.</span>
+              </div>
+              <input class="toggle" type="checkbox" id="contrastToggle">
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-copy">
+                <strong data-i18n="dyslexia">Lecture facilitée</strong>
+                <span data-i18n="dyslexiaText">Espacement accru et police système plus lisible.</span>
+              </div>
+              <input class="toggle" type="checkbox" id="dyslexiaToggle">
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-copy">
+                <strong data-i18n="reduceMotion">Réduire les animations</strong>
+                <span data-i18n="reduceMotionText">Limite les transitions de l'interface.</span>
+              </div>
+              <input class="toggle" type="checkbox" id="motionToggle">
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-copy">
+                <strong data-i18n="textSize">Taille du texte</strong>
+                <span id="scaleValue">100 %</span>
+              </div>
+              <input class="range" type="range" min="90" max="135" step="5" value="100" id="fontScale">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-about">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="aboutTitle">À propos</h2>
+            <p data-i18n="aboutSub">Une web-app locale pour inspecter, modifier et nettoyer les métadonnées.</p>
+          </div>
+        </div>
+
+        <div class="grid cols-2">
+          <div class="card">
+            <h3>Metadata Editor</h3>
+            <p class="lead" style="font-size:.86rem" data-i18n="aboutText">
+              L'application détecte le type de fichier, génère un profil de champs pertinent et permet de télécharger une nouvelle copie lorsque le format peut être modifié de manière fiable directement dans le navigateur.
+            </p>
+            <div class="notice" data-i18n="browserLimits">
+              Les navigateurs n'offrent pas la même liberté qu'une application native : les formats vidéo, HEIC/RAW et certains conteneurs audio restent principalement consultables.
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 data-i18n="supported">Formats principaux</h3>
+            <div class="grid cols-2" style="gap:8px">
+              <span class="badge">JPG / JPEG</span>
+              <span class="badge">PNG</span>
+              <span class="badge">PDF</span>
+              <span class="badge">MP3</span>
+              <span class="badge">DOCX</span>
+              <span class="badge">XLSX / XLSM</span>
+              <span class="badge">PPTX</span>
+              <span class="badge">Audio / vidéo</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<input type="file" id="fileInput" hidden>
+<input type="file" id="batchInput" multiple hidden>
+
+<div class="toast-zone" id="toastZone"></div>
+
+
+<script src="app-1.js"></script>
+<script src="app-2.js"></script>
+<script src="app-3.js"></script>
+<script src="app-4.js"></script>
+</body>
+</html>
