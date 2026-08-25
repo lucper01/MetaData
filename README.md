@@ -4,6 +4,12 @@ Metadata Editor is a local, browser-based tool for inspecting, editing, exportin
 
 The application is designed as a lightweight research and everyday utility. Files are processed directly in the browser and are not uploaded by the application.
 
+## Single-file application
+
+The complete application is contained in a single `index.html` file. The HTML structure, CSS interface, translations, accessibility settings and metadata-processing logic are all embedded in that file.
+
+The page loads a small set of client-side format libraries from jsDelivr, but selected user files remain local to the browser.
+
 ## Features
 
 - automatic file type detection
@@ -26,15 +32,25 @@ The application is designed as a lightweight research and everyday utility. File
 - accessibility options
 - responsive desktop and mobile interface
 
+## Interface
+
+The visual direction follows the Portfolio design language, including:
+
+- cream and green backgrounds with soft radial gradients
+- deep green hero sections
+- Georgia headings
+- rounded white cards with green shadows
+- pill-shaped navigation and controls
+- Portfolio green as the default palette
+- dark mode and alternate cassis and blue palettes
+
 ## Privacy
 
 Metadata Editor is a client-side application. Selected files remain on the user's device and are processed in the browser. The application does not upload the selected files to GitHub or to an application server.
 
 External JavaScript libraries are loaded from jsDelivr to provide file-format support. These libraries are downloaded by the browser as application dependencies; the selected files are not sent to them by the application.
 
-## Supported formats
-
-Editing support currently focuses on formats that can be rewritten reliably in a modern browser:
+## Supported editing formats
 
 - JPEG / JPG
 - PNG
@@ -56,19 +72,11 @@ Other image, audio and video formats can still be detected and previewed where s
 
 The original file is never overwritten by the web application.
 
-## Interface
-
-The interface follows the same visual language as the Portfolio tools, including rounded cards, a persistent side navigation, multiple color palettes, light and dark modes, bilingual controls and accessibility settings.
-
 ## Browser dependencies
-
-The application uses:
 
 - PDF-Lib
 - piexifjs
 - JSZip
-
-These dependencies are loaded client-side from jsDelivr.
 
 ## License
 
