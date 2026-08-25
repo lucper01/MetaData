@@ -1,83 +1,68 @@
-# Metadata Editor
+# MetaData
 
-Metadata Editor is a local, browser-based tool for inspecting, editing, exporting and cleaning metadata embedded in common file formats.
+MetaData is a local, single-file web application for inspecting, editing, cleaning and exporting file metadata directly from the browser.
 
-The application is designed as a lightweight research and everyday utility. Files are processed directly in the browser and are not uploaded by the application.
+The interface is designed to follow the visual language of the associated academic Portfolio while remaining focused on file editing workflows.
 
-## Single-file application
+## Main workflow
 
-The complete application is contained in a single `index.html` file. The HTML structure, CSS interface, translations, accessibility settings and metadata-processing logic are all embedded in that file.
+1. Open or drag a file into the application.
+2. MetaData detects the file type and selects the appropriate metadata engine.
+3. Descriptive fields and modification/provenance fields are displayed separately.
+4. Edit the values directly in the form.
+5. Save a new copy or export associated metadata, depending on the file format.
 
-The page loads a small set of client-side format libraries from jsDelivr, but selected user files remain local to the browser.
+The original file is never overwritten.
 
-## Features
+## Embedded metadata editing
 
-- automatic file type detection
-- adaptive metadata fields according to the selected format
-- JPEG EXIF inspection and editing
-- PNG text metadata inspection and editing
-- PDF document property editing
-- MP3 ID3 metadata editing
-- DOCX, XLSX, XLSM and PPTX core property editing
-- image, audio, video and PDF preview
+MetaData can rewrite metadata directly in a new file for supported formats, including:
+
+- JPEG - EXIF metadata
+- PNG - textual metadata chunks
+- PDF - document properties
+- MP3 - ID3 metadata
+- DOCX, XLSX, XLSM and PPTX - OpenXML document properties
+
+The exact fields depend on the format. For example, the application can expose software/application information, PDF producer information, Office modification information and other format-specific provenance fields.
+
+## Universal sidecar mode
+
+Some file types do not provide standardized embedded metadata that can be safely rewritten from a browser. Source files such as `.py`, `.pyw` and many other arbitrary formats fall into this category.
+
+For these files, every displayed field remains editable, but MetaData clearly switches to **sidecar mode**. Saving produces a `.metadata.json` file associated with the original file instead of pretending to modify metadata that the format does not actually contain.
+
+## Editing controls
+
+The editor distinguishes three operations:
+
+- **Save** - writes a new file or exports its sidecar metadata
+- **Clear all fields** - empties every displayed metadata field
+- **Restore original** - reloads the metadata values detected when the file was opened
+
+Unsaved modifications are indicated directly in the editor.
+
+## Additional features
+
 - complete metadata view
-- privacy audit for potentially identifying metadata
-- metadata cleanup when supported by the browser engine
-- JSON metadata export
-- batch file inventory with JSON and CSV export
+- privacy audit and cleanup
+- JSON export
+- batch inventory with JSON and CSV export
 - local operation history
 - French and English interface
 - light and dark themes
 - green, cassis and blue palettes
-- accessibility options
-- responsive desktop and mobile interface
+- accessibility controls
+- responsive layout
 
-## Interface
+## Local processing
 
-The visual direction follows the Portfolio design language, including:
+Files are processed in the browser and are not uploaded by the application. Third-party JavaScript libraries are loaded as application dependencies from a CDN, but the selected files themselves are not transmitted to those services by MetaData.
 
-- cream and green backgrounds with soft radial gradients
-- deep green hero sections
-- Georgia headings
-- rounded white cards with green shadows
-- pill-shaped navigation and controls
-- Portfolio green as the default palette
-- dark mode and alternate cassis and blue palettes
+## Project structure
 
-## Privacy
-
-Metadata Editor is a client-side application. Selected files remain on the user's device and are processed in the browser. The application does not upload the selected files to GitHub or to an application server.
-
-External JavaScript libraries are loaded from jsDelivr to provide file-format support. These libraries are downloaded by the browser as application dependencies; the selected files are not sent to them by the application.
-
-## Supported editing formats
-
-- JPEG / JPG
-- PNG
-- PDF
-- MP3
-- DOCX
-- XLSX / XLSM
-- PPTX
-
-Other image, audio and video formats can still be detected and previewed where supported by the browser, although some metadata remain read-only.
-
-## Usage
-
-1. Open the web application.
-2. Select or drag a file into the interface.
-3. Review the detected metadata and file information.
-4. Edit the available fields or use the privacy tools.
-5. Download a new modified copy of the file.
-
-The original file is never overwritten by the web application.
-
-## Browser dependencies
-
-- PDF-Lib
-- piexifjs
-- JSZip
+The application code remains entirely inside a single `index.html` file. The repository also contains the README, MIT license and GitHub Pages deployment files.
 
 ## License
 
-This project is released under the MIT License. See `LICENSE` for details.
+MIT License.
