@@ -4,110 +4,729 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b2f23">
-<meta name="description" content="Metadata Editor - inspect and edit metadata locally in your browser.">
-<title>Metadata Editor</title>
+<meta name="description" content="MetaData - inspecter, éditer et exporter des métadonnées localement dans le navigateur.">
+<title>MetaData</title>
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
-:root{--page-width:1320px;--deep:#061f17;--dark:#0b2f23;--main:#1f6f50;--light:#77b892;--soft:#dceee3;--pale:#f3faf5;--cream:#fbf7ed;--text:#1d261f;--muted:#5f6f65;--white:#fff;--danger:#934f4b;--warning:#80682c;--shadow:0 18px 45px rgba(11,47,35,.16);--shadow-soft:0 12px 30px rgba(11,47,35,.10);--sidebar:276px;--font-scale:1;--focus:0 0 0 4px rgba(31,111,80,.18)}
-html[data-theme="dark"]{--deep:#03100c;--dark:#dceee3;--main:#77b892;--light:#9fd3b1;--soft:#193f2e;--pale:#0b1f17;--cream:#07130f;--text:#edf8f0;--muted:#b8cabc;--white:#10251c;--danger:#d98b84;--warning:#d5b66f;--shadow:0 18px 45px rgba(0,0,0,.38);--shadow-soft:0 12px 30px rgba(0,0,0,.22);--focus:0 0 0 4px rgba(119,184,146,.22)}
-html[data-palette="cassis"]{--deep:#2f1524;--dark:#563249;--main:#85546e;--light:#b9839f;--soft:#efe1e8;--pale:#fbf5f8}html[data-theme="dark"][data-palette="cassis"]{--deep:#170b12;--dark:#f0dce6;--main:#c594ad;--light:#dfb3c8;--soft:#4a2d3c;--pale:#24141d}
-html[data-palette="blue"]{--deep:#102735;--dark:#244b60;--main:#4e7e94;--light:#88b2c5;--soft:#deedf3;--pale:#f3f9fb}html[data-theme="dark"][data-palette="blue"]{--deep:#08141b;--dark:#dcecf3;--main:#91bbcd;--light:#b5d5e1;--soft:#29434f;--pale:#11242d}
-html[data-contrast="high"]{--muted:var(--text)}html[data-dyslexia="on"] body{font-family:Verdana,Arial,sans-serif;letter-spacing:.025em;word-spacing:.06em}html[data-motion="reduced"] *,html[data-motion="reduced"] *:before,html[data-motion="reduced"] *:after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
-*{box-sizing:border-box}html{font-size:calc(16px * var(--font-scale));scroll-behavior:smooth}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65;color:var(--text);background:radial-gradient(circle at 8% 0%,rgba(119,184,146,.22),transparent 30%),radial-gradient(circle at 92% 32%,rgba(220,238,227,.55),transparent 32%),linear-gradient(180deg,var(--cream),var(--pale));overflow-x:hidden}html[data-theme="dark"] body{background:radial-gradient(circle at 8% 0%,rgba(119,184,146,.15),transparent 30%),radial-gradient(circle at 92% 32%,rgba(31,111,80,.18),transparent 32%),linear-gradient(180deg,#07130f,#0b1f17)}button,input,textarea,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:none;box-shadow:var(--focus)}button:disabled{opacity:.45;cursor:not-allowed}
-.app{display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);min-height:100vh}.sidebar{position:sticky;top:0;z-index:40;height:100vh;padding:20px 16px;display:flex;flex-direction:column;gap:18px;background:rgba(251,247,237,.94);border-right:1px solid rgba(11,47,35,.12);box-shadow:10px 0 30px rgba(11,47,35,.05);backdrop-filter:blur(14px);transition:transform .22s ease}html[data-theme="dark"] .sidebar{background:rgba(7,19,15,.94);border-color:rgba(220,238,227,.12)}.brand{display:flex;align-items:center;gap:13px;padding:6px 7px 2px}.brand-mark{width:52px;height:52px;display:grid;place-items:center;flex:0 0 52px;border-radius:18px;color:#fff;background:linear-gradient(135deg,var(--deep),var(--main));box-shadow:0 12px 26px rgba(11,47,35,.22);font:900 1.2rem Georgia,serif}.brand-copy strong{display:block;color:var(--dark);font:700 1.08rem Georgia,serif}.brand-copy span{display:block;margin-top:2px;color:var(--muted);font-size:.72rem;font-weight:750}.nav{display:grid;gap:6px}.nav-btn,.button,.icon-btn{border:0;transition:.18s ease}.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:999px;text-align:left;color:var(--muted);background:transparent;font-weight:820}.nav-btn:hover{transform:translateX(2px);color:var(--dark);background:rgba(119,184,146,.12)}.nav-btn.active{color:#fff;background:linear-gradient(90deg,var(--deep),var(--main));box-shadow:0 8px 20px rgba(31,111,80,.18)}.nav-icon{width:28px;height:28px;display:grid;place-items:center;flex:0 0 28px;border-radius:999px;background:var(--pale);color:var(--main);font-size:.82rem}.nav-btn.active .nav-icon{background:#fff;color:var(--main)}.sidebar-footer{margin-top:auto}.local-card{padding:14px;border-radius:20px;color:var(--muted);background:var(--pale);border:1px solid rgba(11,47,35,.08);font-size:.74rem;line-height:1.5}.local-card strong{color:var(--dark)}.version{margin-top:9px;color:var(--muted);font-size:.67rem;padding:0 7px}
-.main{min-width:0}.topbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 24px;background:rgba(251,247,237,.88);border-bottom:1px solid rgba(11,47,35,.10);backdrop-filter:blur(12px)}html[data-theme="dark"] .topbar{background:rgba(7,19,15,.88);border-color:rgba(220,238,227,.10)}.top-title{min-width:0}.top-title strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dark);font:700 1.05rem Georgia,serif}.top-title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;color:var(--muted);font-size:.72rem}.top-actions{display:flex;gap:8px}.button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 14px;border-radius:999px;color:var(--dark);background:rgba(251,247,237,.92);border:1px solid rgba(11,47,35,.14);font-weight:900;box-shadow:0 7px 18px rgba(11,47,35,.07)}html[data-theme="dark"] .button{background:rgba(16,37,28,.88);border-color:rgba(220,238,227,.14)}.button:hover:not(:disabled){transform:translateY(-2px);background:var(--soft)}.button.primary{color:#fff;background:var(--main);border-color:var(--main);box-shadow:0 10px 24px rgba(31,111,80,.20)}.button.primary:hover:not(:disabled){background:var(--deep);border-color:var(--deep)}html[data-theme="dark"] .button.primary{color:#07130f}.button.danger{color:var(--danger);background:color-mix(in srgb,var(--danger) 8%,var(--white));border-color:color-mix(in srgb,var(--danger) 28%,transparent);box-shadow:none}.button.small{min-height:34px;padding:7px 10px;font-size:.75rem}.icon-btn{width:42px;height:42px;display:grid;place-items:center;padding:0;border-radius:999px;color:var(--dark);background:var(--soft)}.icon-btn:hover{background:var(--main);color:#fff}
-.content{width:100%;max-width:var(--page-width);margin:auto;padding:24px 5.5% 80px}.page{display:none;animation:fade .2s ease}.page.active{display:block}@keyframes fade{from{opacity:.55;transform:translateY(5px)}to{opacity:1;transform:none}}.hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(310px,.88fr);gap:44px;align-items:center;padding:42px;border-radius:32px;color:#fff;background:radial-gradient(circle at top right,rgba(220,238,227,.28),transparent 30%),radial-gradient(circle at bottom left,rgba(119,184,146,.22),transparent 34%),linear-gradient(135deg,var(--deep),#0b2f23 48%,var(--main));box-shadow:var(--shadow)}html[data-palette="cassis"] .hero,html[data-palette="blue"] .hero{background:radial-gradient(circle at top right,rgba(255,255,255,.18),transparent 30%),linear-gradient(135deg,var(--deep),var(--dark) 48%,var(--main))}.hero:after{content:"";position:absolute;width:380px;height:380px;right:-150px;bottom:-170px;border-radius:50%;background:rgba(255,255,255,.09)}.hero>*{position:relative;z-index:1}.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 13px;border:1px solid rgba(255,255,255,.34);border-radius:999px;color:var(--soft);font-size:.78rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase}h1,h2,h3,p{margin-top:0}h1{margin:20px 0 14px;max-width:840px;font:700 clamp(2.35rem,5vw,4.25rem)/.98 Georgia,serif;letter-spacing:-.047em}h2{margin:0;color:var(--dark);font:700 clamp(1.8rem,3vw,2.8rem)/1.08 Georgia,serif;letter-spacing:-.025em}h3{margin-bottom:10px;color:var(--dark);font:700 1.12rem Georgia,serif}.lead{color:var(--muted);line-height:1.7}.hero .lead{max-width:800px;color:rgba(255,255,255,.86);font-size:1.03rem}.dropzone{min-height:278px;display:grid;place-items:center;padding:28px;text-align:center;border:1px solid rgba(255,255,255,.26);border-radius:30px;background:rgba(255,255,255,.12);backdrop-filter:blur(12px);box-shadow:0 18px 38px rgba(0,0,0,.12)}.dropzone:hover,.dropzone.drag{transform:translateY(-3px);background:rgba(255,255,255,.18)}.drop-icon{width:70px;height:70px;display:grid;place-items:center;margin:0 auto 14px;border-radius:24px;color:#0b2f23;background:#dceee3;font-size:1.7rem;font-weight:900}.dropzone strong{font:700 1.28rem Georgia,serif}.dropzone p{max-width:330px;margin:8px auto 14px;color:rgba(255,255,255,.80);font-size:.8rem}.hero .badge{color:#0b2f23;background:#dceee3}
-.section{margin-top:38px}.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:17px}.section-head>div:first-child{position:relative;padding-left:20px}.section-head>div:first-child:before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:5px;border-radius:999px;background:var(--main)}.section-head p{margin:7px 0 0;color:var(--muted);font-size:.82rem}.grid{display:grid;gap:18px}.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.card{min-width:0;padding:22px;border-radius:24px;background:rgba(255,255,255,.92);border:1px solid rgba(11,47,35,.12);box-shadow:var(--shadow-soft);transition:.2s ease}html[data-theme="dark"] .card{background:rgba(16,37,28,.88);border-color:rgba(220,238,227,.12)}.card:hover{transform:translateY(-2px);border-color:var(--main);box-shadow:var(--shadow)}.stat{position:relative;overflow:hidden}.stat:after{content:"";position:absolute;width:82px;height:82px;right:-35px;bottom:-35px;border-radius:50%;background:var(--soft)}.stat strong{position:relative;z-index:1;display:block;color:var(--main);font:700 2rem Georgia,serif}.stat span{position:relative;z-index:1;color:var(--muted);font-size:.73rem;font-weight:800}.file-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:15px;align-items:center}.file-icon{width:55px;height:55px;display:grid;place-items:center;border-radius:18px;color:#fff;background:linear-gradient(135deg,var(--deep),var(--main));font-size:.78rem;font-weight:950}.file-meta strong,.file-meta span{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.file-meta strong{color:var(--dark);font:700 1rem Georgia,serif}.file-meta span{margin-top:4px;color:var(--muted);font-size:.73rem}.badge{display:inline-flex;width:max-content;padding:7px 11px;border-radius:999px;color:var(--dark);background:var(--soft);font-size:.68rem;font-weight:900}.badge.warn{color:var(--warning)}
-.editor-layout{display:grid;grid-template-columns:minmax(0,1.14fr) minmax(330px,.86fr);gap:20px}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:grid;gap:7px}.field.full{grid-column:1/-1}.field label{color:var(--dark);font-size:.73rem;font-weight:900}.field input,.field textarea,.search{width:100%;padding:11px 13px;color:var(--text);border:1px solid rgba(11,47,35,.12);border-radius:16px;background:var(--pale);outline:none}.field input:focus,.field textarea:focus,.search:focus{border-color:var(--main);box-shadow:0 0 0 3px color-mix(in srgb,var(--main) 16%,transparent)}.field textarea{min-height:100px;resize:vertical}.preview{min-height:300px;display:grid;place-items:center;overflow:hidden;border-radius:22px;background:var(--pale);border:1px solid rgba(11,47,35,.08)}.preview img,.preview video{display:block;max-width:100%;max-height:410px}.preview audio{width:calc(100% - 30px)}.preview iframe{width:100%;height:430px;border:0;background:#fff}.toolbar{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}.kv{display:grid;grid-template-columns:minmax(130px,.34fr) minmax(0,1fr);gap:12px;padding:11px 0;border-bottom:1px solid rgba(11,47,35,.10)}.kv:last-child{border-bottom:0}.kv dt{color:var(--main);font-size:.72rem;font-weight:900}.kv dd{margin:0;overflow-wrap:anywhere;font-size:.8rem}.notice{padding:14px 15px;border-radius:18px;color:var(--dark);background:var(--pale);border:1px solid rgba(11,47,35,.08);font-size:.77rem}.notice.warn{color:var(--warning)}.raw-table{width:100%;border-collapse:collapse}.raw-table th,.raw-table td{padding:12px 11px;text-align:left;vertical-align:top;border-bottom:1px solid rgba(11,47,35,.10);font-size:.79rem}.raw-table th{color:var(--main);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase}.raw-table td:first-child{width:34%;color:var(--dark);font-weight:850}.empty{padding:38px;text-align:center;color:var(--muted)}.empty strong{display:block;margin-bottom:7px;color:var(--dark);font:700 1.05rem Georgia,serif}.privacy-list,.batch-list,.history-list{display:grid;gap:10px}.privacy-item,.batch-row,.history-item{padding:13px 14px;border-radius:18px;background:var(--pale);border:1px solid rgba(11,47,35,.07)}.privacy-item{display:flex;gap:11px;align-items:flex-start}.privacy-item input{margin-top:3px;accent-color:var(--main)}.privacy-item strong,.batch-row strong,.history-item strong{color:var(--dark);font-size:.8rem}.privacy-item p,.batch-row span,.history-item span{display:block;margin:3px 0 0;color:var(--muted);font-size:.72rem}.batch-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center}.sensitive-row{padding:13px 2px;border-bottom:1px solid rgba(11,47,35,.10)}.sensitive-row strong{display:block;color:var(--dark);font-size:.8rem}.sensitive-row span{display:block;color:var(--muted);font-size:.72rem;overflow-wrap:anywhere}.setting-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:15px 0;border-bottom:1px solid rgba(11,47,35,.10)}.setting-copy strong{color:var(--dark)}.setting-copy span{display:block;color:var(--muted);font-size:.72rem}.segmented{display:flex;gap:5px;padding:5px;border-radius:999px;background:var(--pale)}.segmented button{padding:8px 12px;color:var(--dark);border:0;border-radius:999px;background:transparent;font-weight:850}.segmented button.active{color:#fff;background:var(--main)}.toggle{width:50px;height:28px;accent-color:var(--main)}.range{width:150px;accent-color:var(--main)}select{padding:8px 11px;color:var(--text);border:1px solid rgba(11,47,35,.12);border-radius:999px;background:var(--pale)}.toast-zone{position:fixed;right:20px;bottom:20px;z-index:200;display:grid;gap:8px;width:min(390px,calc(100vw - 40px))}.toast{padding:14px 15px;border:1px solid rgba(11,47,35,.12);border-radius:20px;background:var(--cream);box-shadow:var(--shadow)}.toast strong{display:block;color:var(--dark);font-size:.8rem}.toast span{display:block;color:var(--muted);font-size:.72rem}
-@media(max-width:1080px){.hero,.editor-layout{grid-template-columns:1fr}.cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:820px){.app{display:block}.sidebar{position:fixed;left:0;transform:translateX(-105%);box-shadow:var(--shadow)}body.sidebar-open .sidebar{transform:translateX(0)}.content{padding:16px 16px 60px}.topbar{padding:12px 14px}.cols-2,.cols-3,.cols-4,.field-grid{grid-template-columns:1fr}.hero{padding:28px 22px;border-radius:28px}.hide-mobile{display:none}.kv{grid-template-columns:1fr;gap:3px}}@media(max-width:520px){.top-title span{display:none}.top-actions .button.primary{max-width:150px;padding:8px;font-size:.68rem}.file-card{grid-template-columns:auto minmax(0,1fr)}.file-card .badge{grid-column:2}h1{font-size:2.4rem}.toolbar>*{flex:1 1 150px}.section-head{align-items:flex-start;flex-direction:column}}
+:root{
+  --page-width:1440px;
+  --deep:#061f17;
+  --dark:#0b2f23;
+  --main:#1f6f50;
+  --light:#77b892;
+  --soft:#dceee3;
+  --pale:#f3faf5;
+  --cream:#fbf7ed;
+  --cream-2:#f7f1e6;
+  --text:#1d261f;
+  --muted:#5f6f65;
+  --white:#ffffff;
+  --danger:#934f4b;
+  --warning:#80682c;
+  --success:#2b7456;
+  --line:rgba(11,47,35,.12);
+  --shadow:0 18px 45px rgba(11,47,35,.16);
+  --shadow-soft:0 12px 30px rgba(11,47,35,.10);
+  --sidebar:284px;
+  --font-scale:1;
+  --focus:0 0 0 4px rgba(31,111,80,.18);
+}
+html[data-theme="dark"]{
+  --deep:#03100c;
+  --dark:#dceee3;
+  --main:#77b892;
+  --light:#9fd3b1;
+  --soft:#193f2e;
+  --pale:#0b1f17;
+  --cream:#07130f;
+  --cream-2:#0a1712;
+  --text:#edf8f0;
+  --muted:#b8cabc;
+  --white:#10251c;
+  --danger:#d98b84;
+  --warning:#d5b66f;
+  --success:#8fd1af;
+  --line:rgba(220,238,227,.12);
+  --shadow:0 18px 45px rgba(0,0,0,.38);
+  --shadow-soft:0 12px 30px rgba(0,0,0,.22);
+  --focus:0 0 0 4px rgba(119,184,146,.22);
+}
+html[data-palette="cassis"]{
+  --deep:#2f1524;--dark:#563249;--main:#85546e;--light:#b9839f;--soft:#efe1e8;--pale:#fbf5f8;
+}
+html[data-theme="dark"][data-palette="cassis"]{
+  --deep:#170b12;--dark:#f0dce6;--main:#c594ad;--light:#dfb3c8;--soft:#4a2d3c;--pale:#24141d;
+}
+html[data-palette="blue"]{
+  --deep:#102735;--dark:#244b60;--main:#4e7e94;--light:#88b2c5;--soft:#deedf3;--pale:#f3f9fb;
+}
+html[data-theme="dark"][data-palette="blue"]{
+  --deep:#08141b;--dark:#dcecf3;--main:#91bbcd;--light:#b5d5e1;--soft:#29434f;--pale:#11242d;
+}
+html[data-contrast="high"]{--muted:var(--text);--line:color-mix(in srgb, var(--dark) 25%, transparent)}
+html[data-dyslexia="on"] body{font-family:Verdana,Arial,sans-serif;letter-spacing:.025em;word-spacing:.06em}
+html[data-motion="reduced"] *,html[data-motion="reduced"] *:before,html[data-motion="reduced"] *:after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+*{box-sizing:border-box}
+html{font-size:calc(16px * var(--font-scale));scroll-behavior:smooth}
+body{
+  margin:0;min-height:100vh;overflow-x:hidden;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.65;color:var(--text);
+  background:
+   radial-gradient(circle at 8% 0%, rgba(119,184,146,.22), transparent 30%),
+   radial-gradient(circle at 92% 32%, rgba(220,238,227,.55), transparent 32%),
+   linear-gradient(180deg, var(--cream), var(--pale));
+}
+html[data-theme="dark"] body{
+  background:
+   radial-gradient(circle at 8% 0%, rgba(119,184,146,.15), transparent 30%),
+   radial-gradient(circle at 92% 32%, rgba(31,111,80,.18), transparent 32%),
+   linear-gradient(180deg, #07130f, #0b1f17);
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:none;box-shadow:var(--focus)}
+button:disabled{opacity:.45;cursor:not-allowed}
+a{color:inherit}
+.app{display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);min-height:100vh}
+.sidebar{
+  position:sticky;top:0;z-index:40;height:100vh;padding:20px 16px;display:flex;flex-direction:column;gap:18px;
+  background:rgba(251,247,237,.94);border-right:1px solid var(--line);box-shadow:10px 0 30px rgba(11,47,35,.05);backdrop-filter:blur(14px);transition:transform .22s ease;
+}
+html[data-theme="dark"] .sidebar{background:rgba(7,19,15,.94)}
+.brand{display:flex;align-items:center;gap:13px;padding:6px 7px 2px}
+.brand-mark{width:52px;height:52px;display:grid;place-items:center;flex:0 0 52px;border-radius:18px;color:#fff;background:linear-gradient(135deg,var(--deep),var(--main));box-shadow:0 12px 26px rgba(11,47,35,.22);font:900 1.2rem Georgia,serif}
+.brand-copy strong{display:block;color:var(--dark);font:700 1.72rem Georgia,serif;line-height:1}
+.brand-copy span{display:block;margin-top:4px;color:var(--main);font-size:.72rem;font-weight:850}
+.search-wrap{padding:0 2px}
+.search-box{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.34);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(220,238,227,.08)}
+.sidebar-title{margin:6px 8px 0;color:var(--muted);font-size:.76rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.nav{display:grid;gap:6px}
+.nav-btn,.button,.icon-btn{border:0;transition:.18s ease}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:999px;text-align:left;color:var(--muted);background:transparent;font-weight:820}
+.nav-btn:hover{transform:translateX(2px);color:var(--dark);background:rgba(119,184,146,.12)}
+.nav-btn.active{color:#fff;background:linear-gradient(90deg,var(--deep),var(--main));box-shadow:0 8px 20px rgba(31,111,80,.18)}
+.nav-icon{width:28px;height:28px;display:grid;place-items:center;flex:0 0 28px;border-radius:999px;background:var(--pale);color:var(--main);font-size:.82rem}
+.nav-btn.active .nav-icon{background:#fff;color:var(--main)}
+.local-card{padding:14px;border-radius:20px;color:var(--muted);background:var(--pale);border:1px solid rgba(11,47,35,.08);font-size:.74rem;line-height:1.5}
+.local-card strong{color:var(--dark)}
+.sidebar-footer{margin-top:auto;display:grid;gap:10px}
+.user-card{display:flex;align-items:center;gap:12px;padding:12px;border-radius:20px;background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));border:1px solid rgba(119,184,146,.15)}
+.user-badge{width:42px;height:42px;display:grid;place-items:center;border-radius:999px;color:#fff;background:linear-gradient(135deg,var(--main),var(--light));font-weight:900}
+.user-copy strong{display:block;font-size:.86rem;color:var(--dark)}
+.user-copy span{display:block;font-size:.7rem;color:var(--muted)}
+.main{min-width:0}
+.topbar{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 24px;background:rgba(251,247,237,.88);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+html[data-theme="dark"] .topbar{background:rgba(7,19,15,.88)}
+.top-title{min-width:0}
+.top-title strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dark);font:700 1.05rem Georgia,serif}
+.top-title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px;color:var(--muted);font-size:.72rem}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 14px;border-radius:999px;color:var(--dark);background:rgba(251,247,237,.92);border:1px solid var(--line);font-weight:900;box-shadow:0 7px 18px rgba(11,47,35,.07)}
+html[data-theme="dark"] .button{background:rgba(16,37,28,.88)}
+.button:hover:not(:disabled){transform:translateY(-2px);background:var(--soft)}
+.button.primary{color:#fff;background:var(--main);border-color:var(--main);box-shadow:0 10px 24px rgba(31,111,80,.20)}
+.button.primary:hover:not(:disabled){background:var(--deep);border-color:var(--deep)}
+html[data-theme="dark"] .button.primary{color:#07130f}
+.button.secondary{background:rgba(255,255,255,.52)}
+.button.danger{color:var(--danger);background:color-mix(in srgb,var(--danger) 8%,var(--white));border-color:color-mix(in srgb,var(--danger) 28%,transparent);box-shadow:none}
+.button.small{min-height:34px;padding:7px 10px;font-size:.75rem}
+.icon-btn{width:42px;height:42px;display:grid;place-items:center;padding:0;border-radius:999px;color:var(--dark);background:var(--soft)}
+.icon-btn:hover{background:var(--main);color:#fff}
+.content{width:100%;max-width:var(--page-width);margin:0 auto;padding:24px}
+.page{display:none;animation:fade .18s ease}.page.active{display:block}
+@keyframes fade{from{opacity:.66;transform:translateY(2px)}to{opacity:1;transform:none}}
+.hero{
+  display:grid;grid-template-columns:minmax(0,1.08fr) minmax(340px,.92fr);gap:24px;align-items:stretch;
+  padding:28px;border-radius:36px;border:1px solid rgba(11,47,35,.08);box-shadow:var(--shadow-soft);
+  background:linear-gradient(145deg, rgba(255,255,255,.72), rgba(255,255,255,.44));backdrop-filter:blur(12px)
+}
+.hero-copy{display:flex;flex-direction:column;justify-content:center}
+.hero-card{padding:18px;border-radius:28px;background:linear-gradient(180deg, rgba(11,47,35,.98), rgba(31,111,80,.96));box-shadow:var(--shadow);color:#fff;min-height:100%}
+.hero-card .eyebrow{color:#d8e9de}.hero-card h1{color:#fff;max-width:780px}
+.hero-card .lead{color:rgba(255,255,255,.86);max-width:760px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--main);font-size:.76rem;font-weight:850;letter-spacing:.09em;text-transform:uppercase}
+h1,h2,h3,p{margin-top:0}
+h1{margin:12px 0 14px;color:var(--dark);font:700 clamp(2.6rem,4vw,4.4rem) Georgia,serif;line-height:.98;letter-spacing:-.055em}
+h2{margin-bottom:2px;color:var(--dark);font:700 clamp(1.55rem,2.5vw,2.3rem) Georgia,serif;letter-spacing:-.04em}
+h3{margin-bottom:12px;color:var(--dark);font:700 1rem Georgia,serif}
+.lead{color:var(--muted);font-size:1rem;line-height:1.68}
+.kicker{margin-top:14px;display:flex;flex-wrap:wrap;gap:10px}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:var(--soft);color:var(--main);font-size:.7rem;font-weight:900}
+.badge.ok{background:color-mix(in srgb,var(--success) 11%, var(--white));color:var(--success)}
+.badge.warn{background:color-mix(in srgb,var(--warning) 10%, var(--white));color:var(--warning)}
+.badge.neutral{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.14)}
+.dropzone{min-height:300px;display:grid;place-items:center;padding:28px;text-align:center;border-radius:28px;border:1.5px dashed rgba(255,255,255,.24);background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.05));transition:.16s ease}
+.dropzone:hover,.dropzone.drag{transform:translateY(-2px);border-color:rgba(255,255,255,.42);background:linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.08))}
+.drop-icon{width:78px;height:78px;display:grid;place-items:center;margin:0 auto 14px;border-radius:25px;background:rgba(255,255,255,.1);font-size:2rem}
+.dropzone strong{font:700 1.65rem Georgia,serif}.dropzone p{max-width:360px;margin:10px auto 14px;color:rgba(255,255,255,.78);font-size:.83rem;line-height:1.5}
+.section{margin-top:22px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-bottom:14px;flex-wrap:wrap}.section-head p{margin:5px 0 0;color:var(--muted);font-size:.82rem}
+.grid{display:grid;gap:16px}.grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{padding:22px;border-radius:28px;border:1px solid rgba(11,47,35,.08);background:linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.6));box-shadow:var(--shadow-soft);backdrop-filter:blur(10px)}
+html[data-theme="dark"] .card{background:linear-gradient(180deg, rgba(16,37,28,.9), rgba(16,37,28,.82))}
+.stat strong{display:block;color:var(--dark);font:700 1.8rem Georgia,serif;letter-spacing:-.04em}.stat span{color:var(--muted);font-size:.74rem}
+.editor-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr);gap:18px;align-items:start}
+.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.field{display:grid;gap:7px}.field.full{grid-column:1/-1}.field label{color:var(--dark);font-size:.8rem;font-weight:850}
+.field input,.field textarea,.field select,.search{width:100%;padding:12px 14px;color:var(--text);background:var(--pale);border:1px solid rgba(31,111,80,.18);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}
+.field input:focus,.field textarea:focus,.field select:focus,.search:focus{border-color:var(--main)}
+.field textarea{min-height:108px;resize:vertical}
+.preview{min-height:310px;display:grid;place-items:center;overflow:hidden;border-radius:24px;background:linear-gradient(180deg, rgba(243,250,245,.92), rgba(243,250,245,.78));border:1px solid rgba(11,47,35,.06)}
+html[data-theme="dark"] .preview{background:linear-gradient(180deg, rgba(14,31,23,.92), rgba(18,38,28,.78))}
+.preview img,.preview video{display:block;max-width:100%;max-height:420px}.preview audio{width:calc(100% - 28px)}.preview iframe{width:100%;height:460px;border:0;background:#fff}.preview-empty{padding:36px;text-align:center;color:var(--muted)}
+.preview-empty strong{display:block;margin-top:12px;color:var(--dark);font:700 1.2rem Georgia,serif}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.kv-list{display:grid;gap:2px}.kv{display:grid;grid-template-columns:minmax(130px,.36fr) minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.kv:last-child{border-bottom:0}.kv dt{color:var(--main);font-size:.76rem;font-weight:900}.kv dd{margin:0;overflow-wrap:anywhere;font-size:.82rem}
+.notice{padding:13px 15px;border-radius:18px;background:var(--soft);color:var(--dark);font-size:.78rem;line-height:1.55}.notice.warn{background:color-mix(in srgb, var(--warning) 12%, var(--white));color:var(--warning)}.notice.ok{background:color-mix(in srgb, var(--success) 11%, var(--white));color:var(--success)}
+.raw-table{width:100%;border-collapse:collapse}.raw-table th,.raw-table td{padding:12px 10px;vertical-align:top;text-align:left;border-bottom:1px solid var(--line);font-size:.79rem}.raw-table th{color:var(--muted);font-size:.7rem;letter-spacing:.05em;text-transform:uppercase}.raw-table td:first-child{width:34%;font-weight:800;color:var(--dark)}
+.empty{padding:36px;text-align:center;color:var(--muted)}.empty strong{display:block;margin-bottom:7px;color:var(--dark);font:700 1.2rem Georgia,serif}
+.privacy-list,.settings-group,.batch-list,.history-list{display:grid;gap:10px}
+.privacy-item,.batch-row,.history-item{padding:14px;border-radius:20px;background:linear-gradient(180deg, rgba(243,250,245,.85), rgba(243,250,245,.72));border:1px solid rgba(11,47,35,.06)}
+html[data-theme="dark"] .privacy-item,html[data-theme="dark"] .batch-row,html[data-theme="dark"] .history-item{background:linear-gradient(180deg, rgba(14,31,23,.92), rgba(18,38,28,.78))}
+.privacy-item{display:flex;gap:12px;align-items:flex-start}.privacy-item input{margin-top:4px;accent-color:var(--main)}.privacy-item strong,.batch-row strong,.history-item strong{display:block;color:var(--dark);font-size:.84rem}.privacy-item p,.batch-row span,.history-item span{margin:4px 0 0;color:var(--muted);font-size:.72rem;line-height:1.45}
+.batch-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center}
+.setting-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}.setting-row:last-child{border-bottom:0}.setting-copy strong{display:block;color:var(--dark)}.setting-copy span{display:block;margin-top:4px;color:var(--muted);font-size:.72rem;line-height:1.42}
+.segmented{display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--soft)}.segmented button{padding:8px 12px;color:var(--dark);border:0;border-radius:999px;background:transparent;font-weight:800}.segmented button.active{background:var(--white);box-shadow:0 4px 15px rgba(0,0,0,.07)}
+.toggle{position:relative;width:48px;height:27px;appearance:none;border:1px solid var(--line);border-radius:999px;background:rgba(11,47,35,.12);transition:.16s ease}.toggle::after{content:"";position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:var(--white);box-shadow:0 2px 8px rgba(0,0,0,.15);transition:.16s ease}.toggle:checked{background:var(--main)}.toggle:checked::after{transform:translateX(21px)}
+.range{width:160px;accent-color:var(--main)}
+select{padding:8px 10px;color:var(--text);border:1px solid rgba(31,111,80,.18);border-radius:15px;background:var(--pale)}
+.toast-zone{position:fixed;right:18px;bottom:18px;z-index:200;display:grid;gap:8px;width:min(390px, calc(100vw - 36px))}
+.toast{padding:14px 15px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);box-shadow:var(--shadow-soft);animation:toastIn .2s ease}.toast strong{display:block;color:var(--dark);font-size:.82rem}.toast span{display:block;margin-top:4px;color:var(--muted);font-size:.72rem;line-height:1.42}@keyframes toastIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+@media(max-width:1160px){.hero,.editor-layout{grid-template-columns:1fr}.grid.cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:860px){.app{display:block}.sidebar{position:fixed;left:0;transform:translateX(-104%);width:min(86vw,320px)}body.sidebar-open .sidebar{transform:translateX(0)}.content{padding:14px}.topbar{padding:12px 14px}.grid.cols-2,.grid.cols-3,.grid.cols-4,.field-grid{grid-template-columns:1fr}.kv{grid-template-columns:1fr;gap:4px}.hero{padding:18px;border-radius:28px}.hide-mobile{display:none}}
+@media(max-width:560px){h1{font-size:2.25rem}.top-actions{gap:6px}.button{padding:9px 12px}.preview iframe{height:320px}}
+
+/* UX V2 - Portfolio-faithful compact application shell */
+:root{--sidebar:238px}
+.app{gap:0}
+.sidebar{
+  margin:14px 0 14px 14px;
+  height:calc(100vh - 28px);
+  border:1px solid rgba(11,47,35,.12);
+  border-radius:28px;
+  box-shadow:var(--shadow-soft);
+  padding:16px 12px;
+  gap:12px;
+}
+html[data-theme="dark"] .sidebar{border-color:rgba(220,238,227,.14)}
+.brand{padding:8px 8px 10px}.brand-mark{width:42px;height:42px;flex-basis:42px;border-radius:15px;font-size:.9rem}.brand-copy strong{font-size:1.18rem}.brand-copy span{font-size:.66rem}
+.sidebar-title{margin:8px 10px 0;font-size:.66rem}.nav{gap:3px}.nav-btn{padding:7px 9px;font-size:.79rem}.nav-icon{width:25px;height:25px;flex-basis:25px;font-size:.72rem}
+#openSidebarBtn{min-height:38px;padding:8px 12px;font-size:.78rem}
+.local-card{padding:11px 12px;border-radius:17px;font-size:.68rem}.user-card{padding:9px;border-radius:17px}.user-badge{width:34px;height:34px;font-size:.72rem}.user-copy strong{font-size:.76rem}.user-copy span{font-size:.64rem}
+.main{padding-left:14px}.topbar{margin:14px 14px 0 0;border:1px solid rgba(11,47,35,.12);border-radius:24px;padding:10px 14px;background:rgba(251,247,237,.90);box-shadow:var(--shadow-soft)}
+html[data-theme="dark"] .topbar{border-color:rgba(220,238,227,.14)}
+.top-actions{gap:6px}.button{min-height:36px;padding:8px 12px;font-size:.76rem}.icon-btn{width:36px;height:36px}.content{padding:18px 18px 36px}
+.section-head{margin-bottom:12px}.section-head h2{font-size:clamp(1.55rem,2.2vw,2.2rem)}
+.editor-layout{grid-template-columns:minmax(0,1fr) 360px;gap:14px}.editor-layout>.grid{position:sticky;top:90px}
+.card{padding:18px;border-radius:24px}.field-grid{gap:11px}.field input,.field textarea,.field select{padding:10px 12px;border-radius:15px}.field textarea{min-height:82px}.field label{font-size:.74rem}
+.form-subsection{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}.form-subsection:first-of-type{margin-top:0;padding-top:0;border-top:0}.form-subsection-title{display:flex;align-items:center;gap:9px;margin:0 0 11px;color:var(--dark);font-weight:900;font-size:.86rem}.form-subsection-title span{width:27px;height:27px;display:grid;place-items:center;border-radius:999px;background:var(--soft);color:var(--main);font-size:.72rem}
+.editor-action-bar{position:sticky;bottom:12px;z-index:12;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:18px -4px -4px;padding:10px;border-radius:20px;background:rgba(251,247,237,.94);border:1px solid rgba(11,47,35,.12);box-shadow:0 12px 30px rgba(11,47,35,.14);backdrop-filter:blur(10px)}
+html[data-theme="dark"] .editor-action-bar{background:rgba(7,19,15,.94);border-color:rgba(220,238,227,.14)}
+.editor-action-bar .editor-status{margin-left:auto;padding:6px 10px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:.68rem;font-weight:850}.editor-status.dirty{color:var(--warning);background:color-mix(in srgb,var(--warning) 10%,var(--white))}.editor-status.clean{color:var(--success);background:color-mix(in srgb,var(--success) 10%,var(--white))}
+.preview{min-height:230px}.preview iframe{height:330px}.kv{padding:9px 0}.kv dt,.kv dd{font-size:.72rem}
+.hero{padding:20px;border-radius:30px;gap:18px}.hero-card{padding:22px;border-radius:24px}.hero-card h1{font-size:clamp(2rem,3.2vw,3.3rem);line-height:1.02}.dropzone{min-height:235px;border-radius:24px}.drop-icon{width:58px;height:58px;border-radius:19px;font-size:1.4rem}.dropzone strong{font-size:1.2rem}
+.mode-explainer{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;margin-top:12px;padding:11px 12px;border-radius:16px;background:var(--pale);border:1px solid rgba(11,47,35,.08);font-size:.72rem;color:var(--muted)}.mode-explainer strong{display:block;color:var(--dark);font-size:.76rem}.mode-explainer span:first-child{width:28px;height:28px;display:grid;place-items:center;border-radius:999px;background:var(--soft);color:var(--main);font-weight:900}
+@media(max-width:1160px){.editor-layout{grid-template-columns:1fr}.editor-layout>.grid{position:static}.main{padding-left:0}}
+@media(max-width:860px){.sidebar{margin:8px;height:calc(100vh - 16px)}.topbar{margin:8px 8px 0}.content{padding:12px}.editor-action-bar{bottom:8px}.hero-card h1{font-size:2.25rem}}
+
 </style>
 </head>
 <body>
 <div class="app">
-<aside class="sidebar">
-  <div class="brand"><div class="brand-mark">ME</div><div class="brand-copy"><strong>Metadata Editor</strong><span>Portfolio tools</span></div></div>
-  <button class="button primary" id="openSide">+ <span data-fr="Ouvrir un fichier" data-en="Open file">Ouvrir un fichier</span></button>
-  <div class="nav">
-    <button class="nav-btn active" data-page="home"><span class="nav-icon">⌂</span><span data-fr="Vue générale" data-en="Overview">Vue générale</span></button>
-    <button class="nav-btn" data-page="editor"><span class="nav-icon">✎</span><span data-fr="Métadonnées" data-en="Metadata">Métadonnées</span></button>
-    <button class="nav-btn" data-page="raw"><span class="nav-icon">≡</span><span data-fr="Vue complète" data-en="Complete view">Vue complète</span></button>
-    <button class="nav-btn" data-page="batch"><span class="nav-icon">▦</span><span data-fr="Traitement par lot" data-en="Batch processing">Traitement par lot</span></button>
-    <button class="nav-btn" data-page="privacy"><span class="nav-icon">◉</span><span data-fr="Confidentialité" data-en="Privacy">Confidentialité</span></button>
-    <button class="nav-btn" data-page="history"><span class="nav-icon">↺</span><span data-fr="Historique" data-en="History">Historique</span></button>
-    <button class="nav-btn" data-page="settings"><span class="nav-icon">⚙</span><span data-fr="Personnalisation" data-en="Customization">Personnalisation</span></button>
-    <button class="nav-btn" data-page="about"><span class="nav-icon">i</span><span data-fr="À propos" data-en="About">À propos</span></button>
-  </div>
-  <div class="sidebar-footer"><div class="local-card"><strong>100 % local</strong><br><span data-fr="Les fichiers restent sur votre appareil et sont traités dans le navigateur." data-en="Files stay on your device and are processed in the browser.">Les fichiers restent sur votre appareil et sont traités dans le navigateur.</span></div><div class="version">Metadata Editor - Portfolio Edition</div></div>
-</aside>
-<main class="main">
-<header class="topbar"><button class="icon-btn" id="menuBtn">☰</button><div class="top-title"><strong id="topTitle">Metadata Editor</strong><span id="topSub">Aucun fichier sélectionné</span></div><div class="top-actions"><button class="button hide-mobile" data-go="settings" data-fr="Personnaliser" data-en="Customize">Personnaliser</button><button class="button primary" id="topDownload" disabled data-fr="Télécharger la copie" data-en="Download copy">Télécharger la copie</button></div></header>
-<div class="content">
-<section class="page active" id="page-home">
-  <div class="hero"><div><div class="eyebrow">● <span data-fr="Éditeur universel de métadonnées" data-en="Universal metadata editor">Éditeur universel de métadonnées</span></div><h1 data-fr="Vos fichiers, leurs métadonnées, un seul outil." data-en="Your files, their metadata, one tool.">Vos fichiers, leurs métadonnées, un seul outil.</h1><p class="lead" data-fr="Inspectez, modifiez, exportez ou nettoyez les métadonnées intégrées aux images, PDF, fichiers audio et documents Office. Le format est détecté automatiquement." data-en="Inspect, edit, export or clean metadata embedded in images, PDFs, audio files and Office documents. The format is detected automatically.">Inspectez, modifiez, exportez ou nettoyez les métadonnées intégrées aux images, PDF, fichiers audio et documents Office. Le format est détecté automatiquement.</p><div class="toolbar"><button class="button primary" id="openHero" data-fr="Choisir un fichier" data-en="Choose a file">Choisir un fichier</button><button class="button" data-go="privacy" data-fr="Analyser les données sensibles" data-en="Analyze sensitive data">Analyser les données sensibles</button></div></div><div class="dropzone" id="dropzone" tabindex="0"><div><div class="drop-icon">↥</div><strong data-fr="Glissez un fichier ici" data-en="Drop a file here">Glissez un fichier ici</strong><p data-fr="ou cliquez pour le sélectionner. Le fichier n'est jamais envoyé vers un serveur." data-en="or click to select it. The file is never uploaded to a server.">ou cliquez pour le sélectionner. Le fichier n'est jamais envoyé vers un serveur.</p><span class="badge">Images - PDF - Audio - Vidéo - Office</span></div></div></div>
-  <div class="section"><div class="section-head"><div><h2 data-fr="Fichier courant" data-en="Current file">Fichier courant</h2><p data-fr="Détection automatique du format et du moteur d'édition." data-en="Automatic format and editing engine detection.">Détection automatique du format et du moteur d'édition.</p></div></div><div class="card" id="currentFile"><div class="empty"><strong data-fr="Aucun fichier chargé" data-en="No file loaded">Aucun fichier chargé</strong></div></div></div>
-  <div class="section"><div class="grid cols-4"><div class="card stat"><strong id="statFields">0</strong><span data-fr="champs détectés" data-en="fields detected">champs détectés</span></div><div class="card stat"><strong id="statEditable">0</strong><span data-fr="champs éditables" data-en="editable fields">champs éditables</span></div><div class="card stat"><strong id="statSensitive">0</strong><span data-fr="éléments sensibles" data-en="sensitive items">éléments sensibles</span></div><div class="card stat"><strong>Local</strong><span data-fr="mode de traitement" data-en="processing mode">mode de traitement</span></div></div></div>
-</section>
-<section class="page" id="page-editor"><div class="section-head"><div><h2 data-fr="Métadonnées" data-en="Metadata">Métadonnées</h2><p id="editorSub" data-fr="Les champs adaptés au fichier apparaissent ici." data-en="File-specific fields appear here.">Les champs adaptés au fichier apparaissent ici.</p></div><span class="badge" id="engineBadge">-</span></div><div id="editorEmpty" class="card empty"><strong data-fr="Ouvrez un fichier pour commencer" data-en="Open a file to start">Ouvrez un fichier pour commencer</strong></div><div id="editorWorkspace" class="editor-layout" hidden><div class="card"><div id="fieldGrid" class="field-grid"></div><div class="toolbar"><button class="button primary" id="downloadBtn" data-fr="Télécharger le fichier modifié" data-en="Download edited file">Télécharger le fichier modifié</button><button class="button" id="resetBtn" data-fr="Rétablir les valeurs" data-en="Restore values">Rétablir les valeurs</button><button class="button" id="jsonBtn">JSON</button></div><div class="notice" id="compat" style="margin-top:14px"></div></div><div class="grid"><div class="card"><h3 data-fr="Aperçu" data-en="Preview">Aperçu</h3><div class="preview" id="preview"></div></div><div class="card"><h3 data-fr="Informations fichier" data-en="File information">Informations fichier</h3><dl id="infoList"></dl></div></div></div></section>
-<section class="page" id="page-raw"><div class="section-head"><div><h2 data-fr="Vue complète" data-en="Complete view">Vue complète</h2><p data-fr="Toutes les métadonnées détectées, y compris les propriétés en lecture seule." data-en="All detected metadata, including read-only properties.">Toutes les métadonnées détectées, y compris les propriétés en lecture seule.</p></div><input class="search" id="rawSearch" placeholder="Rechercher"></div><div class="card"><div id="rawEmpty" class="empty"><strong data-fr="Aucun fichier chargé" data-en="No file loaded">Aucun fichier chargé</strong></div><div style="overflow:auto"><table class="raw-table" id="rawTable" hidden><thead><tr><th>Champ</th><th>Valeur</th></tr></thead><tbody></tbody></table></div></div></section>
-<section class="page" id="page-batch"><div class="section-head"><div><h2 data-fr="Traitement par lot" data-en="Batch processing">Traitement par lot</h2><p data-fr="Créez un inventaire local de plusieurs fichiers." data-en="Create a local inventory of multiple files.">Créez un inventaire local de plusieurs fichiers.</p></div><button class="button primary" id="batchPick" data-fr="Ajouter des fichiers" data-en="Add files">Ajouter des fichiers</button></div><div class="grid cols-2"><div class="card"><h3>Fichiers</h3><div id="batchList" class="batch-list"></div></div><div class="card"><h3>Export</h3><div class="toolbar"><button class="button" id="batchJson">JSON</button><button class="button" id="batchCsv">CSV</button><button class="button danger" id="batchClear" data-fr="Vider" data-en="Clear">Vider</button></div><div class="notice" style="margin-top:14px" data-fr="L'analyse en lot reste locale." data-en="Batch analysis stays local.">L'analyse en lot reste locale.</div></div></div></section>
-<section class="page" id="page-privacy"><div class="section-head"><div><h2 data-fr="Confidentialité" data-en="Privacy">Confidentialité</h2><p data-fr="Repérez et retirez les métadonnées susceptibles d'identifier une personne, un appareil ou une localisation." data-en="Identify and remove metadata that may reveal a person, device or location.">Repérez et retirez les métadonnées susceptibles d'identifier une personne, un appareil ou une localisation.</p></div></div><div class="grid cols-2"><div class="card"><h3 data-fr="Éléments sensibles détectés" data-en="Sensitive items detected">Éléments sensibles détectés</h3><div id="privacyResults"></div></div><div class="card"><h3 data-fr="Nettoyage" data-en="Cleanup">Nettoyage</h3><div class="privacy-list"><label class="privacy-item"><input type="checkbox" id="cleanAuthor" checked><span><strong data-fr="Identité et auteur" data-en="Identity and author">Identité et auteur</strong><p>Auteur, artiste, créateur.</p></span></label><label class="privacy-item"><input type="checkbox" id="cleanLocation" checked><span><strong data-fr="Localisation" data-en="Location">Localisation</strong><p>Coordonnées GPS accessibles.</p></span></label><label class="privacy-item"><input type="checkbox" id="cleanSoftware" checked><span><strong data-fr="Logiciel et appareil" data-en="Software and device">Logiciel et appareil</strong><p>Logiciel, appareil, caméra.</p></span></label><label class="privacy-item"><input type="checkbox" id="cleanDates"><span><strong data-fr="Dates intégrées" data-en="Embedded dates">Dates intégrées</strong><p>Dates de création et de modification.</p></span></label></div><button class="button primary" id="cleanBtn" style="margin-top:14px" disabled data-fr="Télécharger une copie nettoyée" data-en="Download cleaned copy">Télécharger une copie nettoyée</button></div></div></section>
-<section class="page" id="page-history"><div class="section-head"><div><h2 data-fr="Historique local" data-en="Local history">Historique local</h2><p data-fr="Journal conservé uniquement dans ce navigateur." data-en="Log stored only in this browser.">Journal conservé uniquement dans ce navigateur.</p></div><button class="button" id="clearHistory" data-fr="Effacer" data-en="Clear">Effacer</button></div><div class="card"><div id="historyList" class="history-list"></div></div></section>
-<section class="page" id="page-settings"><div class="section-head"><div><h2 data-fr="Personnalisation" data-en="Customization">Personnalisation</h2><p data-fr="Réglages visuels inspirés du Portfolio." data-en="Visual settings inspired by the Portfolio.">Réglages visuels inspirés du Portfolio.</p></div></div><div class="grid cols-2"><div class="card"><h3 data-fr="Apparence" data-en="Appearance">Apparence</h3><div class="setting-row"><div class="setting-copy"><strong data-fr="Thème" data-en="Theme">Thème</strong><span>Clair / sombre</span></div><div class="segmented" id="themeSeg"><button data-value="light">Clair</button><button data-value="dark">Sombre</button></div></div><div class="setting-row"><div class="setting-copy"><strong data-fr="Palette" data-en="Palette">Palette</strong><span>Portfolio, cassis ou bleu</span></div><select id="palette"><option value="green">Vert</option><option value="cassis">Cassis</option><option value="blue">Bleu</option></select></div><div class="setting-row"><div class="setting-copy"><strong data-fr="Langue" data-en="Language">Langue</strong><span>FR / EN</span></div><div class="segmented" id="langSeg"><button data-value="fr">FR</button><button data-value="en">EN</button></div></div></div><div class="card"><h3 data-fr="Accessibilité" data-en="Accessibility">Accessibilité</h3><div class="setting-row"><div class="setting-copy"><strong data-fr="Contraste renforcé" data-en="High contrast">Contraste renforcé</strong></div><input type="checkbox" id="contrast"></div><div class="setting-row"><div class="setting-copy"><strong data-fr="Lecture facilitée" data-en="Reading aid">Lecture facilitée</strong></div><input type="checkbox" id="dyslexia"></div><div class="setting-row"><div class="setting-copy"><strong data-fr="Réduire les animations" data-en="Reduce motion">Réduire les animations</strong></div><input type="checkbox" id="motion"></div><div class="setting-row"><div class="setting-copy"><strong data-fr="Taille du texte" data-en="Text size">Taille du texte</strong><span id="scaleVal">100 %</span></div><input class="range" type="range" min="90" max="135" step="5" value="100" id="scale"></div></div></div></section>
-<section class="page" id="page-about"><div class="section-head"><div><h2 data-fr="À propos" data-en="About">À propos</h2><p>Metadata Editor</p></div></div><div class="grid cols-2"><div class="card"><h3>Metadata Editor</h3><p class="lead" data-fr="Une application web locale pour inspecter, modifier, exporter et nettoyer les métadonnées de fichiers courants." data-en="A local web application for inspecting, editing, exporting and cleaning metadata from common file formats.">Une application web locale pour inspecter, modifier, exporter et nettoyer les métadonnées de fichiers courants.</p><div class="notice">JPEG, PNG, PDF, MP3, DOCX, XLSX, XLSM et PPTX sont éditables. Les autres formats restent consultables lorsque le navigateur sait les prévisualiser.</div></div><div class="card"><h3 data-fr="Principe" data-en="Principle">Principe</h3><p class="lead" data-fr="Le fichier original n'est jamais écrasé. Toute modification génère une nouvelle copie à télécharger." data-en="The original file is never overwritten. Every edit generates a new copy to download.">Le fichier original n'est jamais écrasé. Toute modification génère une nouvelle copie à télécharger.</p></div></div></section>
-</div></main></div>
-<input type="file" id="fileInput" hidden><input type="file" id="batchInput" multiple hidden><div class="toast-zone" id="toasts"></div>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">MD</div>
+      <div class="brand-copy">
+        <strong>MetaData</strong>
+        <span data-i18n="appSubtitle">Inspection navigateur</span>
+      </div>
+    </div>
+
+    <button class="button primary" id="openSidebarBtn" data-i18n="openFile">Ouvrir un fichier</button>
+
+    <div class="sidebar-title" data-i18n="navSection">Navigation</div>
+    <nav class="nav">
+      <button class="nav-btn active" data-page="home"><span class="nav-icon">⌂</span><span data-i18n="navHome">Tableau de bord</span></button>
+      <button class="nav-btn" data-page="editor"><span class="nav-icon">✎</span><span data-i18n="navEditor">Métadonnées</span></button>
+      <button class="nav-btn" data-page="raw"><span class="nav-icon">≡</span><span data-i18n="navRaw">Vue complète</span></button>
+      <button class="nav-btn" data-page="privacy"><span class="nav-icon">⚿</span><span data-i18n="navPrivacy">Confidentialité</span></button>
+      <button class="nav-btn" data-page="batch"><span class="nav-icon">▦</span><span data-i18n="navBatch">Traitement par lot</span></button>
+      <button class="nav-btn" data-page="history"><span class="nav-icon">↺</span><span data-i18n="navHistory">Historique</span></button>
+      <button class="nav-btn" data-page="settings"><span class="nav-icon">⚙</span><span data-i18n="navSettings">Paramètres</span></button>
+      <button class="nav-btn" data-page="about"><span class="nav-icon">i</span><span data-i18n="navAbout">À propos</span></button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="local-card">
+        <strong data-i18n="localOnlyTitle">Traitement 100 % local</strong><br>
+        <span data-i18n="localOnlyText">Les fichiers restent sur votre appareil. Aucun envoi n'est effectué par l'application.</span>
+      </div>
+      <div class="user-card">
+        <div class="user-badge">MD</div>
+        <div class="user-copy">
+          <strong>MetaData</strong>
+          <span data-i18n="userRole">Mode navigateur</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="menuBtn" aria-label="Menu">☰</button>
+
+      <div class="top-title">
+        <strong id="topTitle">MetaData</strong>
+        <span id="topSubtitle" data-i18n="topSubtitleDefault">Aucun fichier sélectionné</span>
+      </div>
+
+      <div class="top-actions">
+        <button class="button secondary hide-mobile" id="homeJumpBtn" data-i18n="topDashboard">Tableau de bord</button>
+        <button class="button" id="resetBtn" data-i18n="reset">Remettre à zéro</button>
+        <button class="button" id="exportJsonTop" data-i18n="export">Exporter</button>
+        <button class="button primary" id="saveBtn" data-i18n="save">Enregistrer</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="page active" id="page-home">
+        <div class="hero">
+          <div class="hero-card hero-copy">
+            <div class="eyebrow">● <span data-i18n="heroEyebrow">Éditeur de métadonnées universel</span></div>
+            <h1 data-i18n="heroTitle">Vos fichiers, leurs métadonnées, une seule interface.</h1>
+            <p class="lead" data-i18n="heroText">Modifiez des métadonnées intégrées lorsque le navigateur le permet, ou utilisez le mode sidecar universel pour les formats qui ne peuvent pas être réécrits de manière fiable dans le navigateur.</p>
+            <div class="kicker">
+              <span class="badge neutral">JPEG / PNG</span>
+              <span class="badge neutral">PDF</span>
+              <span class="badge neutral">MP3</span>
+              <span class="badge neutral">DOCX / XLSX / PPTX</span>
+              <span class="badge neutral" data-i18n="universalMode">Mode universel</span>
+            </div>
+          </div>
+          <div class="dropzone" id="dropzone" tabindex="0">
+            <div>
+              <div class="drop-icon">↥</div>
+              <strong data-i18n="dropTitle">Glissez un fichier ici</strong>
+              <p data-i18n="dropText">ou cliquez pour le sélectionner. L'application génère automatiquement le profil de métadonnées adapté au type de fichier.</p>
+              <button class="button primary" id="openHeroBtn" data-i18n="chooseFile">Choisir un fichier</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <h2 data-i18n="currentFile">Fichier courant</h2>
+              <p data-i18n="currentFileText">Profil du fichier, moteur d'édition et statut de sauvegarde.</p>
+            </div>
+          </div>
+          <div class="card" id="currentFileCard"><div class="empty"><strong data-i18n="nothingLoaded">Aucun fichier chargé</strong><span data-i18n="nothingLoadedText">Ouvrez un fichier pour commencer.</span></div></div>
+        </div>
+
+        <div class="section">
+          <div class="grid cols-4">
+            <div class="card stat"><strong id="statFields">0</strong><span data-i18n="statFields">champs détectés</span></div>
+            <div class="card stat"><strong id="statEditable">0</strong><span data-i18n="statEditable">champs éditables</span></div>
+            <div class="card stat"><strong id="statSensitive">0</strong><span data-i18n="statSensitive">éléments sensibles</span></div>
+            <div class="card stat"><strong id="statMode">-</strong><span data-i18n="statMode">mode d'écriture</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-editor">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="editorTitle">Métadonnées</h2>
+            <p id="editorSubtitle" data-i18n="editorSubtitle">Les champs s'adaptent automatiquement au type de fichier.</p>
+          </div>
+          <span class="badge" id="engineBadge">-</span>
+        </div>
+
+        <div id="editorEmpty" class="card empty">
+          <strong data-i18n="editorEmptyTitle">Ouvrez un fichier pour commencer</strong>
+          <span data-i18n="editorEmptyText">L'éditeur affichera les champs adaptés au format détecté.</span>
+        </div>
+
+        <div id="editorWorkspace" class="editor-layout" hidden>
+          <div class="card">
+            <div class="section-head" style="margin-bottom:10px">
+              <div>
+                <h3 data-i18n="descriptiveInfo">Informations descriptives</h3>
+              </div>
+              <span class="badge" id="saveModeBadge">-</span>
+            </div>
+
+            <div class="form-subsection">
+              <div class="form-subsection-title"><span>01</span><span data-i18n="descriptiveInfo">Informations descriptives</span></div>
+              <div id="fieldGrid" class="field-grid"></div>
+            </div>
+
+            <div class="form-subsection" id="modifierSection">
+              <div class="form-subsection-title"><span>02</span><span data-i18n="modifierInfo">Modification et provenance</span></div>
+              <div id="modifierGrid" class="field-grid"></div>
+            </div>
+
+            <div class="notice" id="compatNotice" style="margin-top:16px"></div>
+            <div class="mode-explainer" id="modeExplainer"><span>i</span><div><strong id="modeExplainerTitle">-</strong><div id="modeExplainerText">-</div></div></div>
+
+            <div class="editor-action-bar">
+              <button class="button primary" id="downloadBtn" data-i18n="downloadEdited">Enregistrer</button>
+              <button class="button" id="clearFieldsBtn" data-i18n="clearFields">Vider tous les champs</button>
+              <button class="button" id="resetFieldsBtn" data-i18n="resetFields">Restaurer l'original</button>
+              <button class="button" id="exportJsonBtn" data-i18n="exportJson">Exporter JSON</button>
+              <span class="editor-status clean" id="editorStatus" data-i18n="statusOriginal">Valeurs d'origine</span>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="card">
+              <h3 data-i18n="previewTitle">Aperçu</h3>
+              <div class="preview" id="preview"></div>
+            </div>
+
+            <div class="card">
+              <h3 data-i18n="fileInfo">Informations fichier</h3>
+              <dl class="kv-list" id="fileInfoList"></dl>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-raw">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="rawTitle">Vue complète</h2>
+            <p data-i18n="rawText">Affichage de toutes les métadonnées détectées ainsi que des champs éditables actuels.</p>
+          </div>
+          <input class="search" id="rawSearch" style="max-width:340px" placeholder="Rechercher une métadonnée">
+        </div>
+        <div class="card">
+          <div id="rawEmpty" class="empty"><strong data-i18n="nothingLoaded">Aucun fichier chargé</strong></div>
+          <div style="overflow:auto">
+            <table class="raw-table" id="rawTable" hidden>
+              <thead><tr><th data-i18n="field">Champ</th><th data-i18n="value">Valeur</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-privacy">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="privacyTitle">Confidentialité</h2>
+            <p data-i18n="privacyText">Détection de données potentiellement sensibles et préparation d'une copie nettoyée.</p>
+          </div>
+        </div>
+        <div class="grid cols-2">
+          <div class="card">
+            <h3 data-i18n="sensitiveItems">Éléments sensibles détectés</h3>
+            <div id="privacyResults"><div class="empty"><span data-i18n="privacyEmpty">Chargez un fichier pour lancer l'analyse.</span></div></div>
+          </div>
+          <div class="card">
+            <h3 data-i18n="cleanup">Nettoyage</h3>
+            <div class="privacy-list">
+              <label class="privacy-item"><input type="checkbox" id="cleanAuthor" checked><span><strong data-i18n="cleanAuthor">Identité et auteur</strong><p data-i18n="cleanAuthorText">Auteur, artiste, créateur, dernière modification par.</p></span></label>
+              <label class="privacy-item"><input type="checkbox" id="cleanLocation" checked><span><strong data-i18n="cleanLocation">Localisation</strong><p data-i18n="cleanLocationText">Coordonnées GPS et géolocalisation quand elles sont accessibles.</p></span></label>
+              <label class="privacy-item"><input type="checkbox" id="cleanSoftware" checked><span><strong data-i18n="cleanSoftware">Logiciel et appareil</strong><p data-i18n="cleanSoftwareText">Logiciel, caméra, appareil et informations de production.</p></span></label>
+              <label class="privacy-item"><input type="checkbox" id="cleanDates"><span><strong data-i18n="cleanDates">Dates intégrées</strong><p data-i18n="cleanDatesText">Dates de création ou d'édition présentes dans les métadonnées.</p></span></label>
+            </div>
+            <div class="toolbar">
+              <button class="button primary" id="privacyBtn" data-i18n="prepareClean">Préparer une copie nettoyée</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-batch">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="batchTitle">Traitement par lot</h2>
+            <p data-i18n="batchText">Constituez un inventaire de métadonnées pour plusieurs fichiers.</p>
+          </div>
+          <button class="button primary" id="batchPickBtn" data-i18n="addFiles">Ajouter des fichiers</button>
+        </div>
+        <div class="grid cols-2">
+          <div class="card">
+            <h3 data-i18n="batchFiles">Fichiers</h3>
+            <div id="batchList" class="batch-list"><div class="empty"><span data-i18n="batchEmpty">Aucun fichier dans le lot.</span></div></div>
+          </div>
+          <div class="card">
+            <h3 data-i18n="batchActions">Actions</h3>
+            <div class="settings-group">
+              <button class="button" id="batchJsonBtn" data-i18n="exportManifest">Exporter l'inventaire JSON</button>
+              <button class="button" id="batchCsvBtn" data-i18n="exportCsv">Exporter l'inventaire CSV</button>
+              <button class="button danger" id="batchClearBtn" data-i18n="clearBatch">Vider la liste</button>
+              <div class="notice" data-i18n="batchNote">Le traitement par lot est consultatif : il n'écrit pas directement dans les fichiers.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-history">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="historyTitle">Historique local</h2>
+            <p data-i18n="historyText">Journal local des chargements, exports et sauvegardes.</p>
+          </div>
+          <button class="button" id="clearHistoryBtn" data-i18n="clearHistory">Effacer l'historique</button>
+        </div>
+        <div class="card"><div id="historyList" class="history-list"></div></div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="settingsTitle">Paramètres</h2>
+            <p data-i18n="settingsText">Préférences visuelles et accessibilité, inspirées du Portfolio.</p>
+          </div>
+        </div>
+        <div class="grid cols-2">
+          <div class="card settings-group">
+            <h3 data-i18n="appearance">Apparence</h3>
+            <div class="setting-row"><div class="setting-copy"><strong data-i18n="theme">Thème</strong><span data-i18n="themeText">Clair ou sombre.</span></div><div class="segmented" id="themeSegment"><button data-value="light" class="active" data-i18n="light">Clair</button><button data-value="dark" data-i18n="dark">Sombre</button></div></div>
+            <div class="setting-row"><div class="setting-copy"><strong data-i18n="palette">Palette</strong><span data-i18n="paletteText">Vert Portfolio, cassis ou bleu.</span></div><select id="paletteSelect"><option value="green">Vert</option><option value="cassis">Cassis</option><option value="blue">Bleu</option></select></div>
+            <div class="setting-row"><div class="setting-copy"><strong data-i18n="language">Langue</strong><span data-i18n="languageText">Interface française ou anglaise.</span></div><div class="segmented" id="langSegment"><button data-value="fr" class="active">FR</button><button data-value="en">EN</button></div></div>
+          </div>
+          <div class="card settings-group">
+            <h3 data-i18n="accessibility">Accessibilité</h3>
+            <div class="setting-row"><div class="setting-copy"><strong data-i18n="highContrast">Contraste renforcé</strong><span data-i18n="highContrastText">Accentue les séparations et les éléments interactifs.</span></div><input class="toggle" type="checkbox" id="contrastToggle"></div>
+            <div class="setting-row"><div class="setting-copy"><strong data-i18n="dyslexia">Lecture facilitée</strong><span data-i18n="dyslexiaText">Espacement accru et police système plus lisible.</span></div><input class="toggle" type="checkbox" id="dyslexiaToggle"></div>
+            <div class="setting-row"><div class="setting-copy"><strong data-i18n="reduceMotion">Réduire les animations</strong><span data-i18n="reduceMotionText">Limite les transitions visuelles.</span></div><input class="toggle" type="checkbox" id="motionToggle"></div>
+            <div class="setting-row"><div class="setting-copy"><strong data-i18n="textSize">Taille du texte</strong><span id="scaleValue">100 %</span></div><input class="range" type="range" min="90" max="135" step="5" value="100" id="fontScale"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-about">
+        <div class="section-head"><div><h2 data-i18n="aboutTitle">À propos</h2><p data-i18n="aboutTextHead">Un éditeur de métadonnées local et monofichier, pensé pour GitHub Pages.</p></div></div>
+        <div class="grid cols-2">
+          <div class="card">
+            <h3>MetaData</h3>
+            <p class="lead" style="font-size:.88rem" data-i18n="aboutText">L'application fonctionne dans le navigateur, tout en distinguant deux stratégies d'écriture : l'édition intégrée lorsque le format peut être réécrit directement, et le mode sidecar universel lorsque ce n'est pas possible.</p>
+            <div class="notice" data-i18n="aboutNote">Le mode sidecar génère un fichier .metadata.json - ou une archive .zip contenant le fichier original et ses métadonnées - pour les formats non réécrits nativement dans le navigateur.</div>
+          </div>
+          <div class="card">
+            <h3 data-i18n="supportedFormats">Formats principaux</h3>
+            <div class="grid cols-2" style="gap:8px">
+              <span class="badge">JPEG</span><span class="badge">PNG</span><span class="badge">PDF</span><span class="badge">MP3</span><span class="badge">DOCX</span><span class="badge">XLSX / XLSM</span><span class="badge">PPTX</span><span class="badge" data-i18n="sidecarLabel">Sidecar universel</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<input type="file" id="fileInput" hidden>
+<input type="file" id="batchInput" hidden multiple>
+<div class="toast-zone" id="toastZone"></div>
+
 <script>
-(()=>{"use strict";
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const S={file:null,buffer:null,type:null,meta:{},raw:{},original:{},editable:false,engine:"-",url:null,batch:[],lang:localStorage.getItem("md-lang")||"fr",history:JSON.parse(localStorage.getItem("md-history")||"[]")};
-const labels={fr:{title:"Titre",author:"Auteur",subject:"Sujet",keywords:"Mots-clés",description:"Description",creator:"Créateur",producer:"Producteur",artist:"Artiste",album:"Album",albumArtist:"Artiste de l'album",year:"Année / date",genre:"Genre",track:"Piste",comment:"Commentaire",copyright:"Copyright",software:"Logiciel",dateTime:"Date / heure",lastModifiedBy:"Dernière modification par",category:"Catégorie"},en:{title:"Title",author:"Author",subject:"Subject",keywords:"Keywords",description:"Description",creator:"Creator",producer:"Producer",artist:"Artist",album:"Album",albumArtist:"Album artist",year:"Year / date",genre:"Genre",track:"Track",comment:"Comment",copyright:"Copyright",software:"Software",dateTime:"Date / time",lastModifiedBy:"Last modified by",category:"Category"}};
-const fields={pdf:["title","author","subject","keywords","creator","producer"],jpeg:["title","description","artist","copyright","software","dateTime"],png:["title","description","author","copyright","software","dateTime","keywords"],mp3:["title","artist","album","albumArtist","year","genre","track","comment","copyright"],office:["title","subject","author","keywords","description","category","lastModifiedBy"],image:["title","description","author","copyright","software","dateTime"],audio:["title","artist","album","year","genre","comment","copyright"],video:["title","artist","description","copyright","dateTime"],generic:["title","description","author","keywords","comment","copyright"]};
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
-const ext=n=>n.includes(".")?n.split(".").pop().toLowerCase():"";const size=b=>{let n=b,i=0,u=["B","KB","MB","GB"];while(n>=1024&&i<3){n/=1024;i++}return `${n.toFixed(i?1:0)} ${u[i]}`};
-const mime=f=>f.type||({pdf:"application/pdf",jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",mp3:"audio/mpeg",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",xlsm:"application/vnd.ms-excel.sheet.macroEnabled.12",pptx:"application/vnd.openxmlformats-officedocument.presentationml.presentation"}[ext(f.name)]||"application/octet-stream");
-const type=f=>{const e=ext(f.name),m=mime(f);if(e==="pdf")return"pdf";if(["jpg","jpeg"].includes(e))return"jpeg";if(e==="png")return"png";if(e==="mp3")return"mp3";if(["docx","xlsx","xlsm","pptx"].includes(e))return"office";if(m.startsWith("image/"))return"image";if(m.startsWith("audio/"))return"audio";if(m.startsWith("video/"))return"video";return"generic"};
-const date=v=>new Intl.DateTimeFormat(S.lang==="fr"?"fr-FR":"en-GB",{dateStyle:"medium",timeStyle:"short"}).format(new Date(v));
-function toast(a,b){const d=document.createElement("div");d.className="toast";d.innerHTML=`<strong>${esc(a)}</strong><span>${esc(b)}</span>`;$("#toasts").append(d);setTimeout(()=>d.remove(),3500)}
-function saveBlob(blob,name){const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-function outName(n,s){const i=n.lastIndexOf(".");return i<0?n+s:n.slice(0,i)+s+n.slice(i)}
-function history(action){S.history.unshift({action,file:S.file?.name||"",time:Date.now()});S.history=S.history.slice(0,50);localStorage.setItem("md-history",JSON.stringify(S.history));renderHistory()}
-function toBin(buf){const a=new Uint8Array(buf);let s="";for(let i=0;i<a.length;i+=32768)s+=String.fromCharCode(...a.subarray(i,Math.min(i+32768,a.length)));return s}function fromBin(s){const a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i)&255;return a}function ascii(a,o,n){return String.fromCharCode(...a.slice(o,o+n))}function u32(a,o){return ((a[o]<<24)>>>0)+(a[o+1]<<16)+(a[o+2]<<8)+a[o+3]}function dec(a){try{return new TextDecoder("utf-8").decode(a).replace(/\0/g,"").trim()}catch{return""}}function enc(s){return new TextEncoder().encode(s)}
-async function load(file){S.file=file;S.buffer=await file.arrayBuffer();S.type=type(file);S.meta={};S.raw={};S.editable=false;S.engine="Inspection navigateur";if(S.url)URL.revokeObjectURL(S.url);S.url=URL.createObjectURL(file);await parse();S.original=JSON.parse(JSON.stringify(S.meta));history(S.lang==="fr"?"Fichier chargé":"File loaded");renderAll();go("editor")}
-async function parse(){if(S.type==="pdf")await parsePDF();else if(S.type==="jpeg")await parseJPEG();else if(S.type==="png")await parsePNG();else if(S.type==="mp3")await parseMP3();else if(S.type==="office")await parseOffice();else fields[S.type].forEach(k=>S.meta[k]="");S.raw={"Type MIME":mime(S.file),"Taille":size(S.file.size),"Extension":ext(S.file.name)||"-","Dernière modification":date(S.file.lastModified),"Moteur":S.engine,...S.raw}}
-async function parsePDF(){const d=await PDFLib.PDFDocument.load(S.buffer,{updateMetadata:false});S.engine="PDF Info";S.editable=true;S.meta={title:d.getTitle()||"",author:d.getAuthor()||"",subject:d.getSubject()||"",keywords:(d.getKeywords()||"").replace(/^"|"$/g,""),creator:d.getCreator()||"",producer:d.getProducer()||""};S.raw={...S.meta,Pages:d.getPageCount()}}
-async function writePDF(m){const d=await PDFLib.PDFDocument.load(S.buffer,{updateMetadata:false});d.setTitle(m.title||"");d.setAuthor(m.author||"");d.setSubject(m.subject||"");d.setKeywords((m.keywords||"").split(/[,;]+/).map(x=>x.trim()).filter(Boolean));d.setCreator(m.creator||"");d.setProducer(m.producer||"");return new Blob([await d.save()],{type:"application/pdf"})}
-async function parseJPEG(){S.engine="EXIF JPEG";S.editable=true;let x={};try{x=piexif.load(toBin(S.buffer))}catch{}const z=x["0th"]||{},e=x.Exif||{},g=x.GPS||{},v=(o,k)=>o[k]??"";S.meta={title:"",description:String(v(z,piexif.ImageIFD.ImageDescription)||""),artist:String(v(z,piexif.ImageIFD.Artist)||""),copyright:String(v(z,piexif.ImageIFD.Copyright)||""),software:String(v(z,piexif.ImageIFD.Software)||""),dateTime:String(v(e,piexif.ExifIFD.DateTimeOriginal)||v(z,piexif.ImageIFD.DateTime)||"")};S.raw={...S.meta};const make=v(z,piexif.ImageIFD.Make),model=v(z,piexif.ImageIFD.Model);if(make||model)S.raw.Appareil=`${make||""} ${model||""}`.trim();if(Object.keys(g).length)S.raw.GPS="EXIF GPS"}
-async function writeJPEG(m,opt={}){let x;const b=toBin(S.buffer);try{x=piexif.load(b)}catch{x={"0th":{},Exif:{},GPS:{},Interop:{},"1st":{},thumbnail:null}};x["0th"]=x["0th"]||{};x.Exif=x.Exif||{};x.GPS=x.GPS||{};const set=(o,k,v)=>v?o[k]=v:delete o[k];set(x["0th"],piexif.ImageIFD.ImageDescription,m.description||"");set(x["0th"],piexif.ImageIFD.Artist,m.artist||"");set(x["0th"],piexif.ImageIFD.Copyright,m.copyright||"");set(x["0th"],piexif.ImageIFD.Software,m.software||"");set(x.Exif,piexif.ExifIFD.DateTimeOriginal,m.dateTime||"");if(opt.author){delete x["0th"][piexif.ImageIFD.Artist];delete x["0th"][piexif.ImageIFD.Copyright]}if(opt.location)x.GPS={};if(opt.software){delete x["0th"][piexif.ImageIFD.Software];delete x["0th"][piexif.ImageIFD.Make];delete x["0th"][piexif.ImageIFD.Model]}if(opt.dates){delete x["0th"][piexif.ImageIFD.DateTime];delete x.Exif[piexif.ExifIFD.DateTimeOriginal];delete x.Exif[piexif.ExifIFD.DateTimeDigitized]}return new Blob([fromBin(piexif.insert(piexif.dump(x),b))],{type:"image/jpeg"})}
-function pngChunks(buf){const a=new Uint8Array(buf);let p=8,r=[];while(p+12<=a.length){const l=u32(a,p),t=ascii(a,p+4,4),d=a.slice(p+8,p+8+l);r.push({t,d,p,l});p+=12+l;if(t==="IEND")break}return r}function crc(a){let c=0xffffffff;for(const b of a){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return(c^0xffffffff)>>>0}function U(n){return new Uint8Array([(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255])}function chunk(t,d){const tb=enc(t),z=new Uint8Array(tb.length+d.length);z.set(tb);z.set(d,tb.length);const o=new Uint8Array(12+d.length);o.set(U(d.length));o.set(tb,4);o.set(d,8);o.set(U(crc(z)),8+d.length);return o}function textChunk(k,v){const a=enc(k),b=enc(v),d=new Uint8Array(a.length+1+b.length);d.set(a);d[a.length]=0;d.set(b,a.length+1);return chunk("tEXt",d)}
-async function parsePNG(){S.engine="PNG text chunks";S.editable=true;const c=pngChunks(S.buffer),tx={};for(const q of c)if(q.t==="tEXt"){const z=q.d.indexOf(0);if(z>=0)tx[dec(q.d.slice(0,z))]=dec(q.d.slice(z+1))}S.meta={title:tx.Title||"",description:tx.Description||"",author:tx.Author||tx.Artist||"",copyright:tx.Copyright||"",software:tx.Software||"",dateTime:tx["Creation Time"]||tx.DateTime||"",keywords:tx.Keywords||""};S.raw={...tx}}
-async function writePNG(m,opt={}){const a=new Uint8Array(S.buffer),c=pngChunks(S.buffer),managed=new Set(["Title","Description","Author","Artist","Copyright","Software","Creation Time","DateTime","Keywords"]),parts=[a.slice(0,8)],vals={Title:m.title||"",Description:m.description||"",Author:opt.author?"":m.author||"",Copyright:opt.author?"":m.copyright||"",Software:opt.software?"":m.software||"","Creation Time":opt.dates?"":m.dateTime||"",Keywords:m.keywords||""};for(const q of c){if(q.t==="tEXt"){const z=q.d.indexOf(0),k=z>=0?dec(q.d.slice(0,z)):"";if(managed.has(k))continue}if(q.t==="IEND")for(const[k,v]of Object.entries(vals))if(v)parts.push(textChunk(k,v));parts.push(a.slice(q.p,q.p+12+q.l))}return new Blob(parts,{type:"image/png"})}
-function ss(a,b,c,d){return(a<<21)|(b<<14)|(c<<7)|d}function SS(n){return new Uint8Array([(n>>21)&127,(n>>14)&127,(n>>7)&127,n&127])}function frame(id,v){const t=enc(v),p=new Uint8Array(1+t.length);p[0]=3;p.set(t,1);const h=new Uint8Array(10);h.set(enc(id));h.set(U(p.length),4);const o=new Uint8Array(10+p.length);o.set(h);o.set(p,10);return o}function id3Text(d){if(!d.length)return"";try{return new TextDecoder(d[0]===3?"utf-8":"iso-8859-1").decode(d.slice(1)).replace(/\0/g,"").trim()}catch{return dec(d.slice(1))}}
-async function parseMP3(){S.engine="ID3v2";S.editable=true;const a=new Uint8Array(S.buffer),m={title:"",artist:"",album:"",albumArtist:"",year:"",genre:"",track:"",comment:"",copyright:""},raw={};if(ascii(a,0,3)==="ID3"){const ver=a[3],end=Math.min(a.length,10+ss(a[6],a[7],a[8],a[9])),map={TIT2:"title",TPE1:"artist",TALB:"album",TPE2:"albumArtist",TDRC:"year",TYER:"year",TCON:"genre",TRCK:"track",TCOP:"copyright"};let p=10;while(p+10<=end){const id=ascii(a,p,4);if(!/^[A-Z0-9]{4}$/.test(id))break;const n=ver===4?ss(a[p+4],a[p+5],a[p+6],a[p+7]):u32(a,p+4);if(n<=0||p+10+n>end)break;const d=a.slice(p+10,p+10+n);if(map[id]){m[map[id]]=id3Text(d);raw[id]=m[map[id]]}p+=10+n}}S.meta=m;S.raw=raw}
-async function writeMP3(m,opt={}){const a=new Uint8Array(S.buffer);let start=0;if(ascii(a,0,3)==="ID3")start=Math.min(a.length,10+ss(a[6],a[7],a[8],a[9]));const fs=[],add=(id,k)=>{let v=m[k]||"";if(opt.author&&["artist","albumArtist","copyright"].includes(k))v="";if(opt.dates&&k==="year")v="";if(v)fs.push(frame(id,v))};add("TIT2","title");add("TPE1","artist");add("TALB","album");add("TPE2","albumArtist");add("TDRC","year");add("TCON","genre");add("TRCK","track");add("TCOP","copyright");const n=fs.reduce((s,f)=>s+f.length,0),h=new Uint8Array(10);h.set(enc("ID3"));h[3]=3;h.set(SS(n),6);const o=new Uint8Array(10+n+a.length-start);let p=0;o.set(h,p);p+=10;for(const f of fs){o.set(f,p);p+=f.length}o.set(a.slice(start),p);return new Blob([o],{type:"audio/mpeg"})}
-async function parseOffice(){const z=await JSZip.loadAsync(S.buffer);S.engine="Propriétés OpenXML";S.editable=true;const m={title:"",subject:"",author:"",keywords:"",description:"",category:"",lastModifiedBy:""},f=z.file("docProps/core.xml");if(f){const x=new DOMParser().parseFromString(await f.async("text"),"application/xml"),r=n=>x.getElementsByTagName(n)[0]?.textContent||"";m.title=r("dc:title");m.subject=r("dc:subject");m.author=r("dc:creator");m.keywords=r("cp:keywords");m.description=r("dc:description");m.category=r("cp:category");m.lastModifiedBy=r("cp:lastModifiedBy")}S.meta=m;S.raw={...m}}
-function xmlSet(x,n,v){let e=x.getElementsByTagName(n)[0];if(!e&&v){e=x.createElement(n);x.documentElement.appendChild(e)}if(e)e.textContent=v||""}
-async function writeOffice(m,opt={}){const z=await JSZip.loadAsync(S.buffer),f=z.file("docProps/core.xml");if(f){const x=new DOMParser().parseFromString(await f.async("text"),"application/xml");xmlSet(x,"dc:title",m.title);xmlSet(x,"dc:subject",m.subject);xmlSet(x,"dc:creator",opt.author?"":m.author);xmlSet(x,"cp:keywords",m.keywords);xmlSet(x,"dc:description",m.description);xmlSet(x,"cp:category",m.category);xmlSet(x,"cp:lastModifiedBy",opt.author?"":m.lastModifiedBy);if(opt.dates){xmlSet(x,"dcterms:created","");xmlSet(x,"dcterms:modified","")}z.file("docProps/core.xml",new XMLSerializer().serializeToString(x))}return new Blob([await z.generateAsync({type:"uint8array"})],{type:mime(S.file)})}
-function current(){const m={};$$('[data-key]').forEach(e=>m[e.dataset.key]=e.value);return m}async function generate(opt={}){const m=current();if(S.type==="pdf")return writePDF(m);if(S.type==="jpeg")return writeJPEG(m,opt);if(S.type==="png")return writePNG(m,opt);if(S.type==="mp3")return writeMP3(m,opt);if(S.type==="office")return writeOffice(m,opt);throw new Error(S.lang==="fr"?"Ce format est en lecture seule.":"This format is read-only.")}
-function sensitive(){if(!S.file)return[];const a={...S.raw,...S.meta},rules=["author","artist","creator","gps","latitude","longitude","location","software","appareil","camera","model","make","date","time","created","modified"],r=[];for(const[k,v]of Object.entries(a))if(v&&rules.some(x=>String(k).toLowerCase().includes(x)))r.push([k,v]);return r}
-function renderEditor(){const ok=!!S.file;$("#editorEmpty").hidden=ok;$("#editorWorkspace").hidden=!ok;if(!ok)return;$("#engineBadge").textContent=S.engine;const L=labels[S.lang],ks=fields[S.type]||fields.generic;$("#fieldGrid").innerHTML=ks.map(k=>`<div class="field ${["description","comment","keywords"].includes(k)?"full":""}"><label>${esc(L[k]||k)}</label>${["description","comment","keywords"].includes(k)?`<textarea data-key="${k}" ${S.editable?"":"disabled"}>${esc(S.meta[k]||"")}</textarea>`:`<input data-key="${k}" value="${esc(S.meta[k]||"")}" ${S.editable?"":"disabled"}>`}</div>`).join("");$("#downloadBtn").disabled=$("#topDownload").disabled=$("#cleanBtn").disabled=!S.editable;$("#compat").className="notice"+(S.editable?"":" warn");$("#compat").textContent=S.editable?(S.lang==="fr"?"Ce format peut être réécrit directement dans le navigateur. Le fichier original n'est jamais écrasé.":"This format can be rewritten in the browser. The original is never overwritten."):(S.lang==="fr"?"Ce format peut être consulté mais reste en lecture seule dans le navigateur.":"This format can be inspected but is read-only in the browser.");renderPreview();renderInfo()}
-function renderPreview(){const m=mime(S.file),p=$("#preview");if(m.startsWith("image/"))p.innerHTML=`<img src="${S.url}" alt="">`;else if(m.startsWith("audio/"))p.innerHTML=`<audio controls src="${S.url}"></audio>`;else if(m.startsWith("video/"))p.innerHTML=`<video controls src="${S.url}"></video>`;else if(S.type==="pdf")p.innerHTML=`<iframe src="${S.url}" title="PDF"></iframe>`;else p.innerHTML=`<div class="empty"><strong>${esc(S.file.name)}</strong></div>`}
-function renderInfo(){const d={"Type MIME":mime(S.file),"Taille":size(S.file.size),"Extension":ext(S.file.name)||"-","Dernière modification":date(S.file.lastModified),"Moteur":S.engine,"Édition":S.editable?"Oui":"Non"};$("#infoList").innerHTML=Object.entries(d).map(([k,v])=>`<div class="kv"><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}
-function renderRaw(){const e=$("#rawEmpty"),t=$("#rawTable"),b=t.querySelector("tbody");if(!S.file){e.hidden=false;t.hidden=true;return}e.hidden=true;t.hidden=false;const q=$("#rawSearch").value.toLowerCase();b.innerHTML=Object.entries({...S.raw,...S.meta}).filter(([k,v])=>!q||`${k} ${v}`.toLowerCase().includes(q)).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join("")}
-function renderCurrent(){const b=$("#currentFile");if(!S.file){b.innerHTML='<div class="empty"><strong>Aucun fichier chargé</strong></div>';return}b.innerHTML=`<div class="file-card"><div class="file-icon">${esc(ext(S.file.name).slice(0,4).toUpperCase()||"?")}</div><div class="file-meta"><strong>${esc(S.file.name)}</strong><span>${esc(size(S.file.size))} - ${esc(mime(S.file))} - ${esc(S.engine)}</span></div><span class="badge ${S.editable?"":"warn"}">${S.editable?"Édition navigateur":"Lecture seule"}</span></div>`}
-function renderPrivacy(){const b=$("#privacyResults");if(!S.file){b.innerHTML='<div class="empty">Aucun fichier chargé</div>';return}const r=sensitive();b.innerHTML=r.length?r.map(([k,v])=>`<div class="sensitive-row"><strong>${esc(k)}</strong><span>${esc(v)}</span></div>`).join(""):'<div class="notice">Aucune donnée sensible évidente détectée.</div>'}
-function renderHistory(){const b=$("#historyList");b.innerHTML=S.history.length?S.history.map(x=>`<div class="history-item"><strong>${esc(x.action)}${x.file?` - ${esc(x.file)}`:""}</strong><span>${esc(date(x.time))}</span></div>`).join(""):'<div class="empty">-</div>'}
-function renderBatch(){const b=$("#batchList");b.innerHTML=S.batch.length?S.batch.map((f,i)=>`<div class="batch-row"><span class="badge">${esc(ext(f.name).toUpperCase())}</span><div><strong>${esc(f.name)}</strong><span>${esc(size(f.size))} - ${esc(mime(f))}</span></div><button class="button small" data-rm="${i}">×</button></div>`).join(""):'<div class="empty">Aucun fichier</div>';$$('[data-rm]').forEach(x=>x.onclick=()=>{S.batch.splice(+x.dataset.rm,1);renderBatch()})}
-function renderHeader(){if(S.file){$("#topTitle").textContent=S.file.name;$("#topSub").textContent=`${S.type.toUpperCase()} - ${S.engine}`}else{$("#topTitle").textContent="Metadata Editor";$("#topSub").textContent=S.lang==="fr"?"Aucun fichier sélectionné":"No file selected"}}
-function renderAll(){renderHeader();renderCurrent();renderEditor();renderRaw();renderPrivacy();renderHistory();renderBatch();$("#statFields").textContent=S.file?Object.values({...S.raw,...S.meta}).filter(Boolean).length:0;$("#statEditable").textContent=S.file&&S.editable?(fields[S.type]||[]).length:0;$("#statSensitive").textContent=sensitive().length}
-function go(p){$$('.page').forEach(x=>x.classList.toggle('active',x.id===`page-${p}`));$$('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===p));document.body.classList.remove('sidebar-open');if(p==='raw')renderRaw();if(p==='privacy')renderPrivacy()}
-function language(){document.documentElement.lang=S.lang;$$('[data-fr]').forEach(e=>e.textContent=e.dataset[S.lang]);$$('#langSeg button').forEach(b=>b.classList.toggle('active',b.dataset.value===S.lang));renderAll()}
-function prefs(){const th=localStorage.getItem('md-theme')||'light',pa=localStorage.getItem('md-palette')||'green',co=localStorage.getItem('md-contrast')==='high',dy=localStorage.getItem('md-dyslexia')==='on',mo=localStorage.getItem('md-motion')==='reduced',sc=localStorage.getItem('md-scale')||'100';document.documentElement.dataset.theme=th;document.documentElement.dataset.palette=pa;document.documentElement.dataset.contrast=co?'high':'normal';document.documentElement.dataset.dyslexia=dy?'on':'off';document.documentElement.dataset.motion=mo?'reduced':'normal';document.documentElement.style.setProperty('--font-scale',+sc/100);$$('#themeSeg button').forEach(b=>b.classList.toggle('active',b.dataset.value===th));$('#palette').value=pa;$('#contrast').checked=co;$('#dyslexia').checked=dy;$('#motion').checked=mo;$('#scale').value=sc;$('#scaleVal').textContent=sc+' %'}
-async function download(clean=false){try{const opt=clean?{author:$('#cleanAuthor').checked,location:$('#cleanLocation').checked,software:$('#cleanSoftware').checked,dates:$('#cleanDates').checked}:{};const blob=await generate(opt);saveBlob(blob,outName(S.file.name,clean?'_clean':'_metadata'));history(clean?(S.lang==='fr'?'Copie nettoyée':'Cleaned copy'):(S.lang==='fr'?'Copie modifiée':'Edited copy'));toast('Metadata Editor',S.lang==='fr'?'Téléchargement prêt.':'Download ready.')}catch(e){toast('Erreur',e.message)}}
-function exportJSON(){if(!S.file)return;saveBlob(new Blob([JSON.stringify({file:{name:S.file.name,size:S.file.size,mime:mime(S.file)},type:S.type,engine:S.engine,editable:S.editable,metadata:{...S.raw,...current()}},null,2)],{type:'application/json'}),S.file.name+'.metadata.json');history('Export JSON')}
-function batchData(){return S.batch.map(f=>({name:f.name,extension:ext(f.name),mime:mime(f),size:f.size,lastModified:f.lastModified,type:type(f)}))}
-const chooser=()=>$('#fileInput').click();$('#openSide').onclick=$('#openHero').onclick=chooser;$('#dropzone').onclick=chooser;$('#fileInput').onchange=e=>{if(e.target.files[0])load(e.target.files[0]);e.target.value=''};['dragenter','dragover'].forEach(n=>$('#dropzone').addEventListener(n,e=>{e.preventDefault();$('#dropzone').classList.add('drag')}));['dragleave','drop'].forEach(n=>$('#dropzone').addEventListener(n,e=>{e.preventDefault();$('#dropzone').classList.remove('drag')}));$('#dropzone').addEventListener('drop',e=>{if(e.dataTransfer.files[0])load(e.dataTransfer.files[0])});$$('.nav-btn').forEach(b=>b.onclick=()=>go(b.dataset.page));$$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));$('#menuBtn').onclick=()=>document.body.classList.toggle('sidebar-open');$('#downloadBtn').onclick=$('#topDownload').onclick=()=>download(false);$('#cleanBtn').onclick=()=>download(true);$('#resetBtn').onclick=()=>{S.meta=JSON.parse(JSON.stringify(S.original));renderEditor()};$('#jsonBtn').onclick=exportJSON;$('#rawSearch').oninput=renderRaw;$('#batchPick').onclick=()=>$('#batchInput').click();$('#batchInput').onchange=e=>{S.batch.push(...e.target.files);e.target.value='';renderBatch()};$('#batchJson').onclick=()=>saveBlob(new Blob([JSON.stringify(batchData(),null,2)],{type:'application/json'}),'metadata-batch.json');$('#batchCsv').onclick=()=>{const d=batchData(),h=['name','extension','mime','size','lastModified','type'];saveBlob(new Blob(['\ufeff'+[h.join(';'),...d.map(r=>h.map(k=>`"${String(r[k]??'').replaceAll('"','""')}"`).join(';'))].join('\n')],{type:'text/csv'}),'metadata-batch.csv')};$('#batchClear').onclick=()=>{S.batch=[];renderBatch()};$('#clearHistory').onclick=()=>{S.history=[];localStorage.removeItem('md-history');renderHistory()};$$('#themeSeg button').forEach(b=>b.onclick=()=>{document.documentElement.dataset.theme=b.dataset.value;localStorage.setItem('md-theme',b.dataset.value);prefs()});$('#palette').onchange=e=>{document.documentElement.dataset.palette=e.target.value;localStorage.setItem('md-palette',e.target.value)};$$('#langSeg button').forEach(b=>b.onclick=()=>{S.lang=b.dataset.value;localStorage.setItem('md-lang',S.lang);language()});$('#contrast').onchange=e=>{localStorage.setItem('md-contrast',e.target.checked?'high':'normal');prefs()};$('#dyslexia').onchange=e=>{localStorage.setItem('md-dyslexia',e.target.checked?'on':'off');prefs()};$('#motion').onchange=e=>{localStorage.setItem('md-motion',e.target.checked?'reduced':'normal');prefs()};$('#scale').oninput=e=>{localStorage.setItem('md-scale',e.target.value);prefs()};prefs();language();renderAll();
+(() => {
+"use strict";
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const state = {
+  lang: localStorage.getItem("metadata-lang") || "fr",
+  file: null,
+  buffer: null,
+  type: null,
+  engine: "-",
+  mode: "-",
+  meta: {},
+  original: {},
+  raw: {},
+  previewUrl: null,
+  batch: [],
+  history: JSON.parse(localStorage.getItem("metadata-history") || "[]"),
+  dirty:false
+};
+const dict = {
+  fr: {
+    appSubtitle:"Inspection navigateur", searchFake:"Rechercher...", openFile:"Ouvrir un fichier", navSection:"Navigation", navHome:"Tableau de bord", navEditor:"Métadonnées", navRaw:"Vue complète", navPrivacy:"Confidentialité", navBatch:"Traitement par lot", navHistory:"Historique", navSettings:"Paramètres", navAbout:"À propos", localOnlyTitle:"Traitement 100 % local", localOnlyText:"Les fichiers restent sur votre appareil. Aucun envoi n'est effectué par l'application.", userRole:"Mode navigateur", topSubtitleDefault:"Aucun fichier sélectionné", topDashboard:"Tableau de bord", reset:"Remettre à zéro", export:"Exporter", save:"Enregistrer", heroEyebrow:"Éditeur de métadonnées universel", heroTitle:"Vos fichiers, leurs métadonnées, une seule interface.", heroText:"Modifiez des métadonnées intégrées lorsque le navigateur le permet, ou utilisez le mode sidecar universel pour les formats qui ne peuvent pas être réécrits de manière fiable dans le navigateur.", universalMode:"Mode universel", dropTitle:"Glissez un fichier ici", dropText:"ou cliquez pour le sélectionner. L'application génère automatiquement le profil de métadonnées adapté au type de fichier.", chooseFile:"Choisir un fichier", currentFile:"Fichier courant", currentFileText:"Profil du fichier, moteur d'édition et statut de sauvegarde.", nothingLoaded:"Aucun fichier chargé", nothingLoadedText:"Ouvrez un fichier pour commencer.", statFields:"champs détectés", statEditable:"champs éditables", statSensitive:"éléments sensibles", statMode:"mode d'écriture", editorTitle:"Métadonnées", editorSubtitle:"Les champs s'adaptent automatiquement au type de fichier.", editorEmptyTitle:"Ouvrez un fichier pour commencer", editorEmptyText:"L'éditeur affichera les champs adaptés au format détecté.", descriptiveInfo:"Informations descriptives", modifierInfo:"Modification et provenance", statusOriginal:"Valeurs d’origine", statusChanged:"Modifications non enregistrées", modeEmbeddedTitle:"Écriture dans le fichier", modeEmbeddedText:"Les champs compatibles sont réellement réécrits dans une nouvelle copie du fichier.", modeSidecarTitle:"Métadonnées associées", modeSidecarText:"Ce format ne possède pas de métadonnées intégrées standard modifiables dans le navigateur. Les valeurs sont enregistrées dans un fichier sidecar associé.", downloadEdited:"Enregistrer", clearFields:"Vider tous les champs", resetFields:"Rétablir les valeurs d’origine", exportJson:"Exporter JSON", previewTitle:"Aperçu", fileInfo:"Informations fichier", rawTitle:"Vue complète", rawText:"Affichage de toutes les métadonnées détectées ainsi que des champs éditables actuels.", field:"Champ", value:"Valeur", privacyTitle:"Confidentialité", privacyText:"Détection de données potentiellement sensibles et préparation d'une copie nettoyée.", sensitiveItems:"Éléments sensibles détectés", privacyEmpty:"Chargez un fichier pour lancer l'analyse.", cleanup:"Nettoyage", cleanAuthor:"Identité et auteur", cleanAuthorText:"Auteur, artiste, créateur, dernière modification par.", cleanLocation:"Localisation", cleanLocationText:"Coordonnées GPS et géolocalisation quand elles sont accessibles.", cleanSoftware:"Logiciel et appareil", cleanSoftwareText:"Logiciel, caméra, appareil et informations de production.", cleanDates:"Dates intégrées", cleanDatesText:"Dates de création ou d'édition présentes dans les métadonnées.", prepareClean:"Préparer une copie nettoyée", batchTitle:"Traitement par lot", batchText:"Constituez un inventaire de métadonnées pour plusieurs fichiers.", addFiles:"Ajouter des fichiers", batchFiles:"Fichiers", batchEmpty:"Aucun fichier dans le lot.", batchActions:"Actions", exportManifest:"Exporter l'inventaire JSON", exportCsv:"Exporter l'inventaire CSV", clearBatch:"Vider la liste", batchNote:"Le traitement par lot est consultatif : il n'écrit pas directement dans les fichiers.", historyTitle:"Historique local", historyText:"Journal local des chargements, exports et sauvegardes.", clearHistory:"Effacer l'historique", settingsTitle:"Paramètres", settingsText:"Préférences visuelles et accessibilité, inspirées du Portfolio.", appearance:"Apparence", theme:"Thème", themeText:"Clair ou sombre.", light:"Clair", dark:"Sombre", palette:"Palette", paletteText:"Vert Portfolio, cassis ou bleu.", language:"Langue", languageText:"Interface française ou anglaise.", accessibility:"Accessibilité", highContrast:"Contraste renforcé", highContrastText:"Accentue les séparations et les éléments interactifs.", dyslexia:"Lecture facilitée", dyslexiaText:"Espacement accru et police système plus lisible.", reduceMotion:"Réduire les animations", reduceMotionText:"Limite les transitions visuelles.", textSize:"Taille du texte", aboutTitle:"À propos", aboutTextHead:"Un éditeur de métadonnées local et monofichier, pensé pour GitHub Pages.", aboutText:"L'application fonctionne dans le navigateur, tout en distinguant deux stratégies d'écriture : l'édition intégrée lorsque le format peut être réécrit directement, et le mode sidecar universel lorsque ce n'est pas possible.", aboutNote:"Le mode sidecar génère un fichier .metadata.json - ou une archive .zip contenant le fichier original et ses métadonnées - pour les formats non réécrits nativement dans le navigateur.", supportedFormats:"Formats principaux", sidecarLabel:"Sidecar universel", fileLoaded:"Fichier chargé", fileLoadedText:"Le profil de métadonnées a été généré.", saveDone:"Copie enregistrée", saveDoneText:"La nouvelle version a été préparée en téléchargement.", cleanDone:"Copie nettoyée prête", jsonDone:"Métadonnées exportées", resetDone:"Valeurs d’origine restaurées", clearDone:"Tous les champs ont été vidés.", clearConfirm:"Vider tous les champs affichés ? Les valeurs d’origine resteront récupérables avec « Restaurer l’original ».", error:"Erreur", done:"Terminé", selectFileFirst:"Sélectionnez d'abord un fichier.", clearHistoryConfirm:"Effacer l'historique local ?", confirmResetAll:"Réinitialiser les champs actuels ?", modeEmbedded:"Édition intégrée", modeSidecar:"Mode sidecar universel", engineBrowser:"Inspection navigateur", engineJPEG:"EXIF JPEG", enginePNG:"Chunks texte PNG", enginePDF:"Propriétés PDF", engineMP3:"ID3v2 MP3", engineOffice:"Propriétés OpenXML", engineGeneric:"Métadonnées sidecar", embeddedInfo:"Ce format est modifié directement dans le navigateur. Le fichier original n'est jamais écrasé : une nouvelle copie est téléchargée.", sidecarInfo:"Ce format n'est pas réécrit nativement dans le navigateur. MetaData génère une archive ZIP contenant le fichier original et un fichier .metadata.json avec vos informations descriptives.", cleanInfoEmbedded:"Une copie nettoyée sera générée en supprimant les champs sélectionnés lorsque cela est possible.", cleanInfoSidecar:"Pour les formats sidecar, le nettoyage agit sur les métadonnées du manifeste généré.", mime:"Type MIME", size:"Taille", extension:"Extension", modified:"Dernière modification", engine:"Moteur", saveMode:"Mode", fields:"Champs", yes:"Oui", no:"Non", title:"Titre", description:"Description", author:"Auteur", keywords:"Mots-clés", comment:"Commentaire", copyright:"Copyright", subject:"Sujet", creator:"Créateur", producer:"Producteur", artist:"Artiste", album:"Album", albumArtist:"Artiste de l'album", year:"Année / date", genre:"Genre", track:"Piste", lastModifiedBy:"Dernière modification par", category:"Catégorie", company:"Société", manager:"Responsable", software:"Logiciel", modifierName:"Logiciel / application modificateur", dateTime:"Date / heure", dimensions:"Dimensions", pages:"Pages", gps:"Coordonnées GPS", device:"Appareil / caméra", model:"Modèle", make:"Marque", identity:"Identité", dates:"Dates", noSensitive:"Aucune donnée sensible évidente n'a été détectée dans les champs accessibles."
+  },
+  en: {
+    appSubtitle:"Browser inspection", searchFake:"Search...", openFile:"Open file", navSection:"Navigation", navHome:"Dashboard", navEditor:"Metadata", navRaw:"Complete view", navPrivacy:"Privacy", navBatch:"Batch processing", navHistory:"History", navSettings:"Settings", navAbout:"About", localOnlyTitle:"100% local processing", localOnlyText:"Files stay on your device. The application does not upload them.", userRole:"Browser mode", topSubtitleDefault:"No file selected", topDashboard:"Dashboard", reset:"Clear fields", export:"Export", save:"Save", heroEyebrow:"Universal metadata editor", heroTitle:"Your files, their metadata, one interface.", heroText:"Edit embedded metadata when the browser supports it, or use the universal sidecar mode for formats that cannot be reliably rewritten inside the browser.", universalMode:"Universal mode", dropTitle:"Drop a file here", dropText:"or click to select it. The application automatically generates a metadata profile adapted to the detected file type.", chooseFile:"Choose a file", currentFile:"Current file", currentFileText:"File profile, editing engine and save strategy.", nothingLoaded:"No file loaded", nothingLoadedText:"Open a file to start.", statFields:"fields detected", statEditable:"editable fields", statSensitive:"sensitive items", statMode:"save mode", editorTitle:"Metadata", editorSubtitle:"Fields automatically adapt to the file type.", editorEmptyTitle:"Open a file to start", editorEmptyText:"The editor will show fields adapted to the detected format.", descriptiveInfo:"Descriptive information", modifierInfo:"Modification and provenance", statusOriginal:"Original values", statusChanged:"Unsaved changes", modeEmbeddedTitle:"Embedded file writing", modeEmbeddedText:"Compatible fields are actually rewritten into a new copy of the file.", modeSidecarTitle:"Associated metadata", modeSidecarText:"This format has no standard embedded metadata that can be reliably rewritten in the browser. Values are saved in an associated sidecar file.", downloadEdited:"Save", clearFields:"Clear all fields", resetFields:"Restore original values", exportJson:"Export JSON", previewTitle:"Preview", fileInfo:"File information", rawTitle:"Complete view", rawText:"Displays all detected metadata as well as the current editable fields.", field:"Field", value:"Value", privacyTitle:"Privacy", privacyText:"Detect potentially sensitive information and prepare a cleaned copy.", sensitiveItems:"Sensitive items detected", privacyEmpty:"Load a file to start the analysis.", cleanup:"Cleanup", cleanAuthor:"Identity and author", cleanAuthorText:"Author, artist, creator, last modified by.", cleanLocation:"Location", cleanLocationText:"GPS coordinates and geolocation when accessible.", cleanSoftware:"Software and device", cleanSoftwareText:"Software, camera, device and production information.", cleanDates:"Embedded dates", cleanDatesText:"Creation or editing dates stored in metadata.", prepareClean:"Prepare cleaned copy", batchTitle:"Batch processing", batchText:"Create a metadata inventory for multiple files.", addFiles:"Add files", batchFiles:"Files", batchEmpty:"No files in batch.", batchActions:"Actions", exportManifest:"Export JSON inventory", exportCsv:"Export CSV inventory", clearBatch:"Clear list", batchNote:"Batch processing is consultative: it does not write directly to files.", historyTitle:"Local history", historyText:"Local log of loads, exports and saves.", clearHistory:"Clear history", settingsTitle:"Settings", settingsText:"Visual preferences and accessibility, inspired by the Portfolio.", appearance:"Appearance", theme:"Theme", themeText:"Light or dark.", light:"Light", dark:"Dark", palette:"Palette", paletteText:"Portfolio green, burgundy or blue.", language:"Language", languageText:"French or English interface.", accessibility:"Accessibility", highContrast:"High contrast", highContrastText:"Strengthens separators and interactive elements.", dyslexia:"Reading aid", dyslexiaText:"Increased spacing and a more readable system font.", reduceMotion:"Reduce motion", reduceMotionText:"Limits visual transitions.", textSize:"Text size", aboutTitle:"About", aboutTextHead:"A local single-file metadata editor designed for GitHub Pages.", aboutText:"The application runs in the browser while distinguishing two writing strategies: embedded editing when the format can be rewritten directly, and universal sidecar mode when it cannot.", aboutNote:"Sidecar mode generates a .metadata.json file - or a ZIP archive containing the original file and its metadata - for formats that cannot be rewritten natively in the browser.", supportedFormats:"Main formats", sidecarLabel:"Universal sidecar", fileLoaded:"File loaded", fileLoadedText:"The metadata profile has been generated.", saveDone:"Copy saved", saveDoneText:"The new version has been prepared for download.", cleanDone:"Cleaned copy ready", jsonDone:"Metadata exported", resetDone:"Original values restored", clearDone:"All metadata fields were cleared.", clearConfirm:"Clear all metadata fields?", error:"Error", done:"Done", selectFileFirst:"Select a file first.", clearHistoryConfirm:"Clear local history?", confirmResetAll:"Reset current fields?", modeEmbedded:"Embedded editing", modeSidecar:"Universal sidecar", engineBrowser:"Browser inspection", engineJPEG:"JPEG EXIF", enginePNG:"PNG text chunks", enginePDF:"PDF properties", engineMP3:"MP3 ID3v2", engineOffice:"OpenXML properties", engineGeneric:"Sidecar metadata", embeddedInfo:"This format is modified directly in the browser. The original file is never overwritten: a new copy is downloaded.", sidecarInfo:"This format is not rewritten natively in the browser. MetaData generates a ZIP archive containing the original file and a .metadata.json file with your descriptive information.", cleanInfoEmbedded:"A cleaned copy will be generated by removing the selected fields when possible.", cleanInfoSidecar:"For sidecar formats, cleanup acts on the generated manifest metadata.", mime:"MIME type", size:"Size", extension:"Extension", modified:"Last modified", engine:"Engine", saveMode:"Mode", fields:"Fields", yes:"Yes", no:"No", title:"Title", description:"Description", author:"Author", keywords:"Keywords", comment:"Comment", copyright:"Copyright", subject:"Subject", creator:"Creator", producer:"Producer", artist:"Artist", album:"Album", albumArtist:"Album artist", year:"Year / date", genre:"Genre", track:"Track", lastModifiedBy:"Last modified by", category:"Category", company:"Company", manager:"Manager", software:"Software", modifierName:"Modifier software / application", dateTime:"Date / time", dimensions:"Dimensions", pages:"Pages", gps:"GPS coordinates", device:"Device / camera", model:"Model", make:"Make", identity:"Identity", dates:"Dates", noSensitive:"No obvious sensitive data were detected in the accessible fields."
+  }
+};
+function t(k){ return (dict[state.lang] && dict[state.lang][k]) || (dict.fr && dict.fr[k]) || k; }
+function esc(v){ return String(v ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+function humanSize(bytes){ let n=bytes||0,i=0,u=['B','KB','MB','GB','TB']; while(n>=1024 && i<u.length-1){ n/=1024; i++; } return `${n.toFixed(i?1:0)} ${u[i]}`; }
+function extOf(name){ const i=name.lastIndexOf('.'); return i>=0 ? name.slice(i+1).toLowerCase() : ''; }
+function dateFmt(ms){ return new Intl.DateTimeFormat(state.lang==='fr'?'fr-FR':'en-GB',{dateStyle:'medium',timeStyle:'short'}).format(new Date(ms)); }
+function toast(title, text){ const el=document.createElement('div'); el.className='toast'; el.innerHTML=`<strong>${esc(title)}</strong><span>${esc(text)}</span>`; $('#toastZone').appendChild(el); setTimeout(()=>el.remove(),4200); }
+function addHistory(action, file){ state.history.unshift({action, file: file || (state.file && state.file.name) || '', time: Date.now()}); state.history=state.history.slice(0,80); localStorage.setItem('metadata-history', JSON.stringify(state.history)); renderHistory(); }
+function applyI18n(){ document.documentElement.lang = state.lang; $$('[data-i18n]').forEach(el=> el.textContent=t(el.dataset.i18n)); $('#rawSearch').placeholder = state.lang==='fr' ? 'Rechercher une métadonnée' : 'Search metadata'; $$('#langSegment button').forEach(b=>b.classList.toggle('active', b.dataset.value===state.lang)); renderAll(); }
+function applyPrefs(){ const theme=localStorage.getItem('metadata-theme')||'light'; const palette=localStorage.getItem('metadata-palette')||'green'; const contrast=localStorage.getItem('metadata-contrast')==='high'; const dyslexia=localStorage.getItem('metadata-dyslexia')==='on'; const motion=localStorage.getItem('metadata-motion')==='reduced'; const scale=localStorage.getItem('metadata-scale')||'100'; document.documentElement.dataset.theme=theme; document.documentElement.dataset.palette=palette; document.documentElement.dataset.contrast=contrast?'high':'normal'; document.documentElement.dataset.dyslexia=dyslexia?'on':'off'; document.documentElement.dataset.motion=motion?'reduced':'normal'; document.documentElement.style.setProperty('--font-scale', Number(scale)/100); $$('#themeSegment button').forEach(b=>b.classList.toggle('active', b.dataset.value===theme)); $('#paletteSelect').value=palette; $('#contrastToggle').checked=contrast; $('#dyslexiaToggle').checked=dyslexia; $('#motionToggle').checked=motion; $('#fontScale').value=scale; $('#scaleValue').textContent = scale + ' %'; }
+function showPage(name){ $$('.page').forEach(p=> p.classList.toggle('active', p.id === `page-${name}`)); $$('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.page===name)); document.body.classList.remove('sidebar-open'); if(name==='raw') renderRaw(); if(name==='privacy') renderPrivacy(); }
+function openChooser(){ $('#fileInput').click(); }
+function mimeOf(file){ return (file && file.type) || ({pdf:'application/pdf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',mp3:'audio/mpeg',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',xlsm:'application/vnd.ms-excel.sheet.macroEnabled.12',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation'})[extOf(file.name)] || 'application/octet-stream'; }
+function detectType(file){ const ext=extOf(file.name), mime=mimeOf(file); if(ext==='jpg'||ext==='jpeg') return 'jpeg'; if(ext==='png') return 'png'; if(ext==='pdf') return 'pdf'; if(ext==='mp3') return 'mp3'; if(['docx','xlsx','xlsm','pptx'].includes(ext)) return 'office'; if(mime.startsWith('image/')) return 'generic-image'; if(mime.startsWith('audio/')) return 'generic-audio'; if(mime.startsWith('video/')) return 'generic-video'; return 'generic'; }
+const descriptiveFieldSets = {
+  jpeg:['title','description','artist','copyright','dateTime'],
+  png:['title','description','author','copyright','dateTime','keywords'],
+  pdf:['title','author','subject','keywords','creator'],
+  mp3:['title','artist','album','albumArtist','year','genre','track','comment','copyright'],
+  office:['title','subject','author','keywords','description','category'],
+  generic:['title','description','author','keywords','comment','copyright'],
+  'generic-image':['title','description','author','keywords','comment','copyright'],
+  'generic-audio':['title','description','author','keywords','comment','copyright'],
+  'generic-video':['title','description','author','keywords','comment','copyright']
+};
+const modifierFieldSets = {
+  jpeg:['modifierName'],
+  png:['modifierName'],
+  pdf:['modifierName'],
+  mp3:['modifierName'],
+  office:['lastModifiedBy','modifierName'],
+  generic:['modifierName'],
+  'generic-image':['modifierName'],
+  'generic-audio':['modifierName'],
+  'generic-video':['modifierName']
+};
+const fieldSets = Object.fromEntries(Object.keys(descriptiveFieldSets).map(type => [type, [...descriptiveFieldSets[type], ...(modifierFieldSets[type]||[])]]));
+function defaultMetaFor(type){ const out={}; (fieldSets[type]||fieldSets.generic).forEach(k=> out[k]=''); return out; }
+function binFromBuf(buf){ const bytes=new Uint8Array(buf); let out=''; const step=0x8000; for(let i=0;i<bytes.length;i+=step) out += String.fromCharCode(...bytes.subarray(i, Math.min(i+step, bytes.length))); return out; }
+function uint8FromBin(str){ const a=new Uint8Array(str.length); for(let i=0;i<str.length;i++) a[i]=str.charCodeAt(i)&255; return a; }
+function decodeText(bytes){ try{ return new TextDecoder('utf-8').decode(bytes).replace(/\0/g,'').trim(); }catch{ return ''; } }
+function encodeText(str){ return new TextEncoder().encode(str); }
+function readAscii(bytes,start,len){ return String.fromCharCode(...bytes.slice(start,start+len)); }
+function readU32BE(bytes,o){ return ((bytes[o]<<24)>>>0)+(bytes[o+1]<<16)+(bytes[o+2]<<8)+bytes[o+3]; }
+function synchsafeToInt(b0,b1,b2,b3){ return (b0<<21)|(b1<<14)|(b2<<7)|b3; }
+function intToSynchsafe(n){ return new Uint8Array([(n>>21)&0x7f,(n>>14)&0x7f,(n>>7)&0x7f,n&0x7f]); }
+function u32be(n){ return new Uint8Array([(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255]); }
+function detectImageDimensions(buffer){ const bytes=new Uint8Array(buffer); if(bytes.length>24 && readAscii(bytes,1,3)==='PNG') return `${readU32BE(bytes,16)} × ${readU32BE(bytes,20)}`; if(bytes[0]===0xFF && bytes[1]===0xD8){ let i=2; while(i<bytes.length){ if(bytes[i]!==0xFF){ i++; continue; } const marker=bytes[i+1]; const len=(bytes[i+2]<<8)+bytes[i+3]; if([0xC0,0xC1,0xC2,0xC3,0xC5,0xC6,0xC7,0xC9,0xCA,0xCB,0xCD,0xCE,0xCF].includes(marker)){ const h=(bytes[i+5]<<8)+bytes[i+6]; const w=(bytes[i+7]<<8)+bytes[i+8]; return `${w} × ${h}`; } i += 2 + len; } } return ''; }
+async function loadFile(file){ try{ state.file=file; state.buffer=await file.arrayBuffer(); state.type=detectType(file); state.raw={}; state.meta=defaultMetaFor(state.type); state.original={}; if(state.previewUrl) URL.revokeObjectURL(state.previewUrl); state.previewUrl=URL.createObjectURL(file); await parseFile(); state.original=JSON.parse(JSON.stringify(state.meta)); state.dirty=false; addHistory(t('fileLoaded'), file.name); renderAll(); showPage('editor'); toast(t('fileLoaded'), t('fileLoadedText')); }catch(err){ console.error(err); toast(t('error'), err.message || String(err)); } }
+async function parseFile(){
+  const type=state.type;
+  if(type==='jpeg'){ await parseJPEG(); }
+  else if(type==='png'){ await parsePNG(); }
+  else if(type==='pdf'){ await parsePDF(); }
+  else if(type==='mp3'){ await parseMP3(); }
+  else if(type==='office'){ await parseOffice(); }
+  else { await parseGeneric(); }
+}
+async function parseGeneric(){ state.engine=t('engineGeneric'); state.mode=t('modeSidecar'); state.meta=defaultMetaFor(state.type); state.raw={ [t('mime')]: mimeOf(state.file), [t('dimensions')]: detectImageDimensions(state.buffer) }; }
+async function parsePDF(){ const doc=await PDFLib.PDFDocument.load(state.buffer,{updateMetadata:false}); state.engine=t('enginePDF'); state.mode=t('modeEmbedded'); state.meta={ title:doc.getTitle()||'', author:doc.getAuthor()||'', subject:doc.getSubject()||'', keywords:Array.isArray(doc.getKeywords()) ? doc.getKeywords().join(', ') : (doc.getKeywords()||''), creator:doc.getCreator()||'', modifierName:doc.getProducer()||'' }; state.raw={ [t('title')]:state.meta.title, [t('author')]:state.meta.author, [t('subject')]:state.meta.subject, [t('keywords')]:state.meta.keywords, [t('creator')]:state.meta.creator, [t('modifierName')]:state.meta.modifierName, [t('pages')]: doc.getPageCount() }; }
+async function parseJPEG(){ const binary=binFromBuf(state.buffer); let exif={}; try{ exif=piexif.load(binary); }catch{} const z=exif['0th']||{}, e=exif['Exif']||{}, gps=exif['GPS']||{}; const rv=(obj,key)=>obj[key]||''; state.engine=t('engineJPEG'); state.mode=t('modeEmbedded'); state.meta={ title:'', description:String(rv(z,piexif.ImageIFD.ImageDescription)||''), artist:String(rv(z,piexif.ImageIFD.Artist)||''), copyright:String(rv(z,piexif.ImageIFD.Copyright)||''), modifierName:String(rv(z,piexif.ImageIFD.Software)||''), dateTime:String(rv(e,piexif.ExifIFD.DateTimeOriginal)||rv(z,piexif.ImageIFD.DateTime)||'') }; state.raw={ [t('description')]:state.meta.description, [t('artist')]:state.meta.artist, [t('copyright')]:state.meta.copyright, [t('modifierName')]:state.meta.modifierName, [t('dateTime')]:state.meta.dateTime, [t('dimensions')]: detectImageDimensions(state.buffer) }; const make=rv(z,piexif.ImageIFD.Make), model=rv(z,piexif.ImageIFD.Model); if(make) state.raw[t('make')] = String(make); if(model) state.raw[t('model')] = String(model); if(Object.keys(gps).length) state.raw[t('gps')] = 'EXIF GPS'; }
+function parsePngChunks(buffer){ const bytes=new Uint8Array(buffer); if(bytes.length<8 || readAscii(bytes,1,3)!=='PNG') return []; let pos=8, chunks=[]; while(pos+12<=bytes.length){ const len=readU32BE(bytes,pos), type=readAscii(bytes,pos+4,4), data=bytes.slice(pos+8,pos+8+len); chunks.push({type,data,start:pos,length:len}); pos += 12 + len; if(type==='IEND') break; } return chunks; }
+async function parsePNG(){ const chunks=parsePngChunks(state.buffer); const text={}; for(const c of chunks){ if(c.type==='tEXt'){ const zero=c.data.indexOf(0); if(zero>=0){ const k=decodeText(c.data.slice(0,zero)); const v=decodeText(c.data.slice(zero+1)); text[k]=v; } } } state.engine=t('enginePNG'); state.mode=t('modeEmbedded'); state.meta={ title:text.Title||'', description:text.Description||'', author:text.Author||text.Artist||'', copyright:text.Copyright||'', modifierName:text.Software||'', dateTime:text['Creation Time']||text.DateTime||'', keywords:text.Keywords||'' }; state.raw={ ...text, [t('dimensions')]: detectImageDimensions(state.buffer) }; }
+function decodeId3Text(data){ if(!data.length) return ''; const enc=data[0], body=data.slice(1); try{ if(enc===0) return new TextDecoder('iso-8859-1').decode(body).replace(/\0/g,'').trim(); if(enc===3) return new TextDecoder('utf-8').decode(body).replace(/\0/g,'').trim(); return new TextDecoder('utf-16').decode(body).replace(/\0/g,'').trim(); }catch{ return decodeText(body); } }
+async function parseMP3(){ const bytes=new Uint8Array(state.buffer); const meta=defaultMetaFor('mp3'); const raw={}; if(readAscii(bytes,0,3)==='ID3' && bytes.length>10){ const ver=bytes[3], tagSize=synchsafeToInt(bytes[6],bytes[7],bytes[8],bytes[9]); let pos=10, end=Math.min(bytes.length, 10+tagSize); const map={TIT2:'title',TPE1:'artist',TALB:'album',TPE2:'albumArtist',TDRC:'year',TYER:'year',TCON:'genre',TRCK:'track',TCOP:'copyright',TENC:'modifierName'}; while(pos+10<=end){ const id=readAscii(bytes,pos,4); if(!/^[A-Z0-9]{4}$/.test(id)) break; let size = ver===4 ? synchsafeToInt(bytes[pos+4],bytes[pos+5],bytes[pos+6],bytes[pos+7]) : readU32BE(bytes,pos+4); if(size<=0 || pos+10+size>end) break; const data=bytes.slice(pos+10,pos+10+size); if(map[id]){ const val=decodeId3Text(data); meta[map[id]] = val; raw[id]=val; } else if(id==='COMM'){ const val=decodeId3Text(data.slice(4)); meta.comment=val; raw[id]=val; } pos += 10 + size; } } state.engine=t('engineMP3'); state.mode=t('modeEmbedded'); state.meta=meta; state.raw=raw; }
+async function parseOffice(){ const zip=await JSZip.loadAsync(state.buffer); state.engine=t('engineOffice'); state.mode=t('modeEmbedded'); const meta=defaultMetaFor('office'); if(zip.file('docProps/core.xml')){ const xml=await zip.file('docProps/core.xml').async('text'); const doc=new DOMParser().parseFromString(xml,'application/xml'); const read=name=> doc.getElementsByTagName(name)[0]?.textContent || ''; meta.title=read('dc:title'); meta.subject=read('dc:subject'); meta.author=read('dc:creator'); meta.keywords=read('cp:keywords'); meta.description=read('dc:description'); meta.category=read('cp:category'); meta.lastModifiedBy=read('cp:lastModifiedBy'); const created=read('dcterms:created'); const modified=read('dcterms:modified'); if(created) state.raw['Created']=created; if(modified) state.raw['Modified']=modified; }
+ if(zip.file('docProps/app.xml')){ const xml=await zip.file('docProps/app.xml').async('text'); const doc=new DOMParser().parseFromString(xml,'application/xml'); const read=name=> doc.getElementsByTagName(name)[0]?.textContent || ''; const company=read('Company'), manager=read('Manager'), application=read('Application'); if(company) state.raw[t('company')]=company; if(manager) state.raw[t('manager')]=manager; if(application){ state.raw[t('modifierName')]=application; meta.modifierName=application; } }
+ state.meta=meta;
+}
+function getCurrentMeta(){ const out={}; $$('#editorWorkspace [data-key]').forEach(el=> out[el.dataset.key] = el.value); return out; }
+function fieldEl(key,val){ const long=['description','keywords','comment'].includes(key); const id='fld-'+key; const ph = key==='keywords' ? (state.lang==='fr' ? 'Séparez les mots-clés par une virgule...' : 'Separate keywords with commas...') : ''; return `<div class="field ${long?'full':''}"><label for="${id}">${esc(t(key))}</label>${long ? `<textarea id="${id}" data-key="${key}" placeholder="${esc(ph)}">${esc(val||'')}</textarea>` : `<input id="${id}" data-key="${key}" value="${esc(val||'')}" placeholder="${esc(ph)}">`}</div>`; }
+function renderEditor(){
+  const empty=$('#editorEmpty'), ws=$('#editorWorkspace');
+  if(!state.file){ empty.hidden=false; ws.hidden=true; $('#engineBadge').textContent='-'; return; }
+  empty.hidden=true; ws.hidden=false;
+  $('#engineBadge').textContent = state.engine;
+  $('#editorSubtitle').textContent = `${state.file.name} · ${state.type.toUpperCase()}`;
+  const mainKeys=descriptiveFieldSets[state.type] || descriptiveFieldSets.generic;
+  const modifierKeys=modifierFieldSets[state.type] || modifierFieldSets.generic;
+  $('#fieldGrid').innerHTML = mainKeys.map(k=> fieldEl(k, state.meta[k]||'')).join('');
+  $('#modifierGrid').innerHTML = modifierKeys.map(k=> fieldEl(k, state.meta[k]||'')).join('');
+  $('#modifierSection').hidden = modifierKeys.length===0;
+  $('#saveModeBadge').textContent = state.mode;
+  const embedded = state.mode===t('modeEmbedded');
+  $('#compatNotice').className = 'notice ' + (embedded ? 'ok' : 'warn');
+  $('#compatNotice').textContent = embedded ? t('embeddedInfo') : t('sidecarInfo');
+  $('#modeExplainerTitle').textContent = embedded ? t('modeEmbeddedTitle') : t('modeSidecarTitle');
+  $('#modeExplainerText').textContent = embedded ? t('modeEmbeddedText') : t('modeSidecarText');
+  $('#downloadBtn').textContent = embedded ? t('save') : (state.lang==='fr' ? 'Exporter les métadonnées' : 'Export metadata');
+  $$('#editorWorkspace [data-key]').forEach(el=> el.addEventListener('input', markDirty));
+  updateEditorStatus();
+  renderPreview(); renderFileInfo();
+}
+function markDirty(){ state.dirty=true; updateEditorStatus(); renderStats(); }
+function updateEditorStatus(){ const el=$('#editorStatus'); if(!el) return; el.textContent = state.dirty ? t('statusChanged') : t('statusOriginal'); el.classList.toggle('dirty', !!state.dirty); el.classList.toggle('clean', !state.dirty); }
+function renderPreview(){ const p=$('#preview'); if(!state.file){ p.innerHTML=''; return; } const mime=mimeOf(state.file); if(mime.startsWith('image/')) p.innerHTML = `<img alt="" src="${state.previewUrl}">`; else if(mime.startsWith('audio/')) p.innerHTML = `<audio controls src="${state.previewUrl}"></audio>`; else if(mime.startsWith('video/')) p.innerHTML = `<video controls src="${state.previewUrl}"></video>`; else if(state.type==='pdf') p.innerHTML = `<iframe src="${state.previewUrl}" title="PDF preview"></iframe>`; else p.innerHTML = `<div class="preview-empty"><div class="drop-icon">⌘</div><strong>${esc(state.file.name)}</strong><div class="badge" style="margin-top:12px">${esc(extOf(state.file.name).toUpperCase() || 'FILE')}</div></div>`; }
+function renderFileInfo(){ if(!state.file){ $('#fileInfoList').innerHTML=''; return; } const data={ [t('mime')]:mimeOf(state.file), [t('size')]:humanSize(state.file.size), [t('extension')]:extOf(state.file.name)||'-', [t('modified')]:dateFmt(state.file.lastModified), [t('engine')]:state.engine, [t('saveMode')]:state.mode }; $('#fileInfoList').innerHTML = Object.entries(data).map(([k,v])=>`<div class="kv"><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join(''); }
+function renderCurrent(){ const box=$('#currentFileCard'); if(!state.file){ box.innerHTML = `<div class="empty"><strong>${esc(t('nothingLoaded'))}</strong><span>${esc(t('nothingLoadedText'))}</span></div>`; return; } const modeClass = state.mode===t('modeEmbedded') ? 'ok' : 'warn'; box.innerHTML = `<div style="display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center"><div class="brand-mark" style="width:56px;height:56px;font-size:.95rem">${esc((extOf(state.file.name)||'FILE').slice(0,4).toUpperCase())}</div><div><strong style="display:block;color:var(--dark);font:700 1.1rem Georgia,serif">${esc(state.file.name)}</strong><span style="display:block;color:var(--muted);font-size:.76rem;margin-top:4px">${esc(humanSize(state.file.size))} · ${esc(mimeOf(state.file))} · ${esc(state.engine)}</span></div><div><span class="badge ${modeClass}">${esc(state.mode)}</span></div></div>`; }
+function renderRaw(){ const empty=$('#rawEmpty'), table=$('#rawTable'), tbody=table.querySelector('tbody'); if(!state.file){ empty.hidden=false; table.hidden=true; return; } empty.hidden=true; table.hidden=false; const q=$('#rawSearch').value.trim().toLowerCase(); const all={...state.raw, ...getCurrentMeta()}; const rows=Object.entries(all).filter(([k,v])=> !q || `${k} ${v}`.toLowerCase().includes(q)).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))); tbody.innerHTML = rows.map(([k,v])=> `<tr><td>${esc(k)}</td><td>${esc(String(v??''))}</td></tr>`).join(''); }
+function sensitiveItems(){ if(!state.file) return []; const all={...state.raw, ...getCurrentMeta()}; const rules=[ {label:t('identity'), keys:['author','artist','creator','lastmodified','company','manager','copyright']}, {label:t('gps'), keys:['gps','latitude','longitude','location']}, {label:t('device'), keys:['device','camera','model','make','software','producer','modifiername']}, {label:t('dates'), keys:['date','time','created','modified']} ]; const items=[]; for(const rule of rules){ for(const [k,v] of Object.entries(all)){ if(!v) continue; const key=String(k).toLowerCase(); if(rule.keys.some(x=> key.includes(x))){ items.push({label:rule.label, key:k, value:v}); } } } const seen=new Set(); return items.filter(i=>{ const id=`${i.label}|${i.key}|${i.value}`; if(seen.has(id)) return false; seen.add(id); return true; }); }
+function renderPrivacy(){ const box=$('#privacyResults'); if(!state.file){ box.innerHTML = `<div class="empty"><span>${esc(t('privacyEmpty'))}</span></div>`; return; } const items=sensitiveItems(); if(!items.length){ box.innerHTML = `<div class="notice">${esc(t('noSensitive'))}</div>`; return; } box.innerHTML = items.map(i=> `<div class="history-item"><strong>${esc(i.label)} · ${esc(i.key)}</strong><span>${esc(String(i.value))}</span></div>`).join(''); }
+function renderBatch(){ const box=$('#batchList'); if(!state.batch.length){ box.innerHTML = `<div class="empty"><span>${esc(t('batchEmpty'))}</span></div>`; return; } box.innerHTML = state.batch.map((f,i)=> `<div class="batch-row"><span class="badge">${esc((extOf(f.name)||'?').toUpperCase())}</span><div><strong>${esc(f.name)}</strong><span>${esc(humanSize(f.size))} · ${esc(mimeOf(f))}</span></div><button class="button small" data-rm="${i}">×</button></div>`).join(''); $$('[data-rm]').forEach(btn=> btn.onclick=()=>{ state.batch.splice(Number(btn.dataset.rm),1); renderBatch(); }); }
+function renderHistory(){ const box=$('#historyList'); if(!state.history.length){ box.innerHTML = `<div class="empty"><span>-</span></div>`; return; } box.innerHTML = state.history.map(h=> `<div class="history-item"><strong>${esc(h.action)}${h.file ? ' · ' + esc(h.file) : ''}</strong><span>${esc(dateFmt(h.time))}</span></div>`).join(''); }
+function renderStats(){ const fields = Object.entries({...state.raw, ...getCurrentMeta()}).filter(([,v])=>v!==''&&v!==null&&v!==undefined).length; const editable = state.file ? (fieldSets[state.type] || fieldSets.generic).length : 0; $('#statFields').textContent = String(fields); $('#statEditable').textContent = String(editable); $('#statSensitive').textContent = String(sensitiveItems().length); $('#statMode').textContent = state.file ? (state.mode===t('modeEmbedded') ? (state.lang==='fr' ? 'Intégré' : 'Embedded') : 'Sidecar') : '-'; }
+function renderHeader(){ if(state.file){ $('#topTitle').textContent = state.file.name; $('#topSubtitle').textContent = `${state.type.toUpperCase()} · ${state.engine} · ${state.mode}`; $('#saveBtn').disabled=false; $('#resetBtn').disabled=false; $('#exportJsonTop').disabled=false; } else { $('#topTitle').textContent='MetaData'; $('#topSubtitle').textContent=t('topSubtitleDefault'); $('#saveBtn').disabled=true; $('#resetBtn').disabled=true; $('#exportJsonTop').disabled=true; } }
+function renderAll(){ renderHeader(); renderCurrent(); renderEditor(); renderRaw(); renderPrivacy(); renderBatch(); renderHistory(); renderStats(); }
+async function saveCurrent(cleanOptions=null){ if(!state.file){ toast(t('error'), t('selectFileFirst')); return; } try{ if(state.mode===t('modeEmbedded')){ const blob=await buildEmbeddedBlob(cleanOptions); downloadBlob(blob, buildOutputName(state.file.name, cleanOptions ? '_clean' : '_metadata')); addHistory(cleanOptions ? t('cleanDone') : t('saveDone'), state.file.name); if(!cleanOptions){ state.dirty=false; updateEditorStatus(); } toast(t('done'), cleanOptions ? t('cleanDone') : t('saveDoneText')); } else { const sidecarBlob=buildSidecarJson(cleanOptions); downloadBlob(sidecarBlob, state.file.name + (cleanOptions ? '.clean.metadata.json' : '.metadata.json')); addHistory(cleanOptions ? t('cleanDone') : t('saveDone'), state.file.name); if(!cleanOptions){ state.dirty=false; updateEditorStatus(); } toast(t('done'), cleanOptions ? t('cleanDone') : t('saveDoneText')); } }catch(err){ console.error(err); toast(t('error'), err.message || String(err)); } }
+function buildOutputName(name,suffix){ const i=name.lastIndexOf('.'); return i>=0 ? name.slice(0,i)+suffix+name.slice(i) : name+suffix; }
+function downloadBlob(blob,name){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1200); }
+function cleanMeta(meta, options){ const out=JSON.parse(JSON.stringify(meta)); if(options){ if(options.cleanAuthor){ ['author','artist','albumArtist','creator','lastModifiedBy','copyright'].forEach(k=> { if(k in out) out[k]=''; }); } if(options.cleanSoftware){ ['software','producer','modifierName'].forEach(k=> { if(k in out) out[k]=''; }); } if(options.cleanDates){ ['dateTime','year'].forEach(k=> { if(k in out) out[k]=''; }); } } return out; }
+function buildSidecarJson(cleanOptions){ const meta = cleanMeta(getCurrentMeta(), cleanOptions); const manifest={ originalFile:{name:state.file.name, size:state.file.size, mime:mimeOf(state.file), extension:extOf(state.file.name), lastModified:state.file.lastModified}, editor:'MetaData', saveMode:'sidecar', metadata:meta, rawDetectedMetadata:state.raw }; return new Blob([JSON.stringify(manifest,null,2)], {type:'application/json'}); }
+async function buildEmbeddedBlob(cleanOptions){ const meta = cleanMeta(getCurrentMeta(), cleanOptions); if(state.type==='pdf') return writePDF(meta);
+ if(state.type==='jpeg') return writeJPEG(meta, cleanOptions);
+ if(state.type==='png') return writePNG(meta, cleanOptions);
+ if(state.type==='mp3') return writeMP3(meta, cleanOptions);
+ if(state.type==='office') return writeOffice(meta, cleanOptions);
+ return buildSidecarJson(cleanOptions);
+}
+async function writePDF(meta){ const doc=await PDFLib.PDFDocument.load(state.buffer,{updateMetadata:false}); doc.setTitle(meta.title||''); doc.setAuthor(meta.author||''); doc.setSubject(meta.subject||''); doc.setKeywords((meta.keywords||'').split(/[,;]+/).map(x=>x.trim()).filter(Boolean)); doc.setCreator(meta.creator||''); doc.setProducer(meta.modifierName||''); const bytes=await doc.save(); return new Blob([bytes], {type:'application/pdf'}); }
+async function writeJPEG(meta, options={}){ const binary=binFromBuf(state.buffer); let exif; try{ exif=piexif.load(binary); }catch{ exif={"0th":{},"Exif":{},"GPS":{},"Interop":{},"1st":{},"thumbnail":null}; }
+ exif['0th']=exif['0th']||{}; exif['Exif']=exif['Exif']||{}; exif['GPS']=exif['GPS']||{};
+ const setOrDelete=(obj,key,val)=>{ if(val) obj[key]=val; else delete obj[key]; };
+ setOrDelete(exif['0th'], piexif.ImageIFD.ImageDescription, meta.description||'');
+ setOrDelete(exif['0th'], piexif.ImageIFD.Artist, meta.artist||'');
+ setOrDelete(exif['0th'], piexif.ImageIFD.Copyright, meta.copyright||'');
+ setOrDelete(exif['0th'], piexif.ImageIFD.Software, meta.modifierName||'');
+ setOrDelete(exif['Exif'], piexif.ExifIFD.DateTimeOriginal, meta.dateTime||'');
+ if(options.cleanAuthor){ delete exif['0th'][piexif.ImageIFD.Artist]; delete exif['0th'][piexif.ImageIFD.Copyright]; }
+ if(options.cleanLocation){ exif['GPS']={}; }
+ if(options.cleanSoftware){ delete exif['0th'][piexif.ImageIFD.Software]; delete exif['0th'][piexif.ImageIFD.Make]; delete exif['0th'][piexif.ImageIFD.Model]; }
+ if(options.cleanDates){ delete exif['0th'][piexif.ImageIFD.DateTime]; delete exif['Exif'][piexif.ExifIFD.DateTimeOriginal]; delete exif['Exif'][piexif.ExifIFD.DateTimeDigitized]; }
+ const out=piexif.insert(piexif.dump(exif), binary); return new Blob([uint8FromBin(out)], {type:'image/jpeg'}); }
+function crc32(bytes){ let c=0xffffffff; for(const b of bytes){ c ^= b; for(let k=0;k<8;k++) c=(c>>>1)^((c&1)?0xedb88320:0); } return (c^0xffffffff)>>>0; }
+function u32(n){ return new Uint8Array([(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255]); }
+function makePngChunk(type,data){ const tbytes=encodeText(type); const crcInput=new Uint8Array(tbytes.length+data.length); crcInput.set(tbytes); crcInput.set(data, tbytes.length); const out=new Uint8Array(12+data.length); out.set(u32(data.length),0); out.set(tbytes,4); out.set(data,8); out.set(u32(crc32(crcInput)), 8+data.length); return out; }
+function makeTextChunk(key,val){ const kb=encodeText(key), vb=encodeText(val); const data=new Uint8Array(kb.length+1+vb.length); data.set(kb,0); data[kb.length]=0; data.set(vb,kb.length+1); return makePngChunk('tEXt', data); }
+async function writePNG(meta, options={}){ const bytes=new Uint8Array(state.buffer); const chunks=parsePngChunks(state.buffer); const managed=new Set(['Title','Description','Author','Artist','Copyright','Software','Creation Time','DateTime','Keywords']); const parts=[bytes.slice(0,8)]; const values={ Title:meta.title||'', Description:meta.description||'', Author:options.cleanAuthor?'':(meta.author||''), Copyright:options.cleanAuthor?'':(meta.copyright||''), Software:options.cleanSoftware?'':(meta.modifierName||''), 'Creation Time':options.cleanDates?'':(meta.dateTime||''), Keywords:meta.keywords||'' }; let inserted=false; for(const c of chunks){ if(c.type==='tEXt'){ const zero=c.data.indexOf(0); const key=zero>=0 ? decodeText(c.data.slice(0,zero)) : ''; if(managed.has(key)) continue; } if(c.type==='IEND' && !inserted){ for(const [k,v] of Object.entries(values)){ if(v) parts.push(makeTextChunk(k,v)); } inserted=true; } parts.push(bytes.slice(c.start, c.start+12+c.length)); } return new Blob(parts, {type:'image/png'}); }
+function makeId3TextFrame(id,text){ const payload=new Uint8Array(1+encodeText(text).length); payload[0]=3; payload.set(encodeText(text),1); const head=new Uint8Array(10); head.set(encodeText(id),0); head.set(u32be(payload.length),4); const out=new Uint8Array(head.length+payload.length); out.set(head); out.set(payload,head.length); return out; }
+function makeCommentFrame(text){ const txt=encodeText(text); const payload=new Uint8Array(1+3+1+txt.length); payload[0]=3; payload.set(encodeText('eng'),1); payload[4]=0; payload.set(txt,5); const head=new Uint8Array(10); head.set(encodeText('COMM'),0); head.set(u32be(payload.length),4); const out=new Uint8Array(head.length+payload.length); out.set(head); out.set(payload,10); return out; }
+async function writeMP3(meta, options={}){ const original=new Uint8Array(state.buffer); let audioStart=0; if(readAscii(original,0,3)==='ID3' && original.length>10){ const oldSize=synchsafeToInt(original[6],original[7],original[8],original[9]); audioStart=Math.min(original.length, 10+oldSize); } const frames=[]; const add=(id,key)=>{ let val=meta[key]||''; if(options.cleanAuthor && ['artist','albumArtist','copyright'].includes(key)) val=''; if(options.cleanDates && key==='year') val=''; if(val) frames.push(makeId3TextFrame(id,val)); }; add('TIT2','title'); add('TPE1','artist'); add('TALB','album'); add('TPE2','albumArtist'); add('TDRC','year'); add('TCON','genre'); add('TRCK','track'); add('TCOP','copyright'); add('TENC','modifierName'); if(meta.comment && !options.cleanAuthor) frames.push(makeCommentFrame(meta.comment)); const total=frames.reduce((a,b)=>a+b.length,0); const header=new Uint8Array(10); header.set(encodeText('ID3'),0); header[3]=3; header[4]=0; header[5]=0; header.set(intToSynchsafe(total),6); const out=new Uint8Array(10+total+(original.length-audioStart)); let p=0; out.set(header,p); p+=10; for(const f of frames){ out.set(f,p); p += f.length; } out.set(original.slice(audioStart),p); return new Blob([out], {type:'audio/mpeg'}); }
+function setXmlText(doc,tag,value){ let el=doc.getElementsByTagName(tag)[0]; if(!el && value){ el=doc.createElement(tag); doc.documentElement.appendChild(el); } if(el) el.textContent = value || ''; }
+async function writeOffice(meta, options={}){ const zip=await JSZip.loadAsync(state.buffer); if(zip.file('docProps/core.xml')){ const xml=await zip.file('docProps/core.xml').async('text'); const doc=new DOMParser().parseFromString(xml,'application/xml'); setXmlText(doc,'dc:title', meta.title||''); setXmlText(doc,'dc:subject', meta.subject||''); setXmlText(doc,'dc:creator', options.cleanAuthor ? '' : (meta.author||'')); setXmlText(doc,'cp:keywords', meta.keywords||''); setXmlText(doc,'dc:description', meta.description||''); setXmlText(doc,'cp:category', meta.category||''); setXmlText(doc,'cp:lastModifiedBy', options.cleanAuthor ? '' : (meta.lastModifiedBy||'')); if(options.cleanDates){ setXmlText(doc,'dcterms:created',''); setXmlText(doc,'dcterms:modified',''); } zip.file('docProps/core.xml', new XMLSerializer().serializeToString(doc)); }
+ if(zip.file('docProps/app.xml')){ const xml=await zip.file('docProps/app.xml').async('text'); const doc=new DOMParser().parseFromString(xml,'application/xml'); if(options.cleanSoftware){ ['Company','Manager','Application','AppVersion'].forEach(tag=> setXmlText(doc,tag,'')); } else { setXmlText(doc,'Application', meta.modifierName||''); } zip.file('docProps/app.xml', new XMLSerializer().serializeToString(doc)); }
+ const bytes=await zip.generateAsync({type:'uint8array'}); return new Blob([bytes], {type:mimeOf(state.file)}); }
+function exportJson(){ if(!state.file){ toast(t('error'), t('selectFileFirst')); return; } const payload={ file:{name:state.file.name,size:state.file.size,mime:mimeOf(state.file),extension:extOf(state.file.name),lastModified:state.file.lastModified}, type:state.type, engine:state.engine, mode:state.mode, editableMetadata:getCurrentMeta(), detectedMetadata:state.raw }; downloadBlob(new Blob([JSON.stringify(payload,null,2)], {type:'application/json'}), state.file.name + '.metadata.json'); addHistory(t('jsonDone'), state.file.name); toast(t('done'), t('jsonDone')); }
+function clearFields(){
+  if(!state.file) return;
+  if(!confirm(t('clearConfirm'))) return;
+  const keys=fieldSets[state.type] || fieldSets.generic;
+  state.meta={}; keys.forEach(k=> state.meta[k]='');
+  state.dirty=true;
+  renderEditor(); renderStats(); renderRaw(); renderPrivacy();
+  toast(t('done'), t('clearDone'));
+}
+function resetFields(){
+  if(!state.file) return;
+  state.meta = JSON.parse(JSON.stringify(state.original));
+  state.dirty=false;
+  renderEditor(); renderStats(); renderRaw(); renderPrivacy();
+  toast(t('done'), t('resetDone'));
+}
+function renderBatchManifest(){ return state.batch.map(f=>({ name:f.name, extension:extOf(f.name), mime:mimeOf(f), size:f.size, lastModified:f.lastModified, type:detectType(f) })); }
+function exportBatchJson(){ const data=renderBatchManifest(); downloadBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}), 'metadata-batch.json'); }
+function exportBatchCsv(){ const rows=renderBatchManifest(); const head=['name','extension','mime','size','lastModified','type']; const csv=[head.join(';'), ...rows.map(r=> head.map(k=> `"${String(r[k]??'').replaceAll('"','""')}"`).join(';'))].join('\n'); downloadBlob(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}), 'metadata-batch.csv'); }
+$('#openSidebarBtn').onclick=openChooser; $('#openHeroBtn').onclick=openChooser; $('#fileInput').onchange=e=>{ const f=e.target.files?.[0]; if(f) loadFile(f); e.target.value=''; };
+$('#dropzone').onclick=openChooser; $('#dropzone').onkeydown=e=>{ if(e.key==='Enter'||e.key===' ') openChooser(); };
+['dragenter','dragover'].forEach(ev=> $('#dropzone').addEventListener(ev,e=>{ e.preventDefault(); $('#dropzone').classList.add('drag'); })); ['dragleave','drop'].forEach(ev=> $('#dropzone').addEventListener(ev,e=>{ e.preventDefault(); $('#dropzone').classList.remove('drag'); })); $('#dropzone').addEventListener('drop',e=>{ const f=e.dataTransfer.files?.[0]; if(f) loadFile(f); });
+$$('.nav-btn').forEach(btn=> btn.onclick=()=> showPage(btn.dataset.page)); $('#menuBtn').onclick=()=> document.body.classList.toggle('sidebar-open'); $('#homeJumpBtn').onclick=()=> showPage('home'); $('#resetBtn').onclick=clearFields; $('#exportJsonTop').onclick=exportJson; $('#saveBtn').onclick=()=> saveCurrent(); $('#downloadBtn').onclick=()=> saveCurrent(); $('#clearFieldsBtn').onclick=clearFields; $('#resetFieldsBtn').onclick=resetFields; $('#exportJsonBtn').onclick=exportJson; $('#rawSearch').oninput=renderRaw; $('#privacyBtn').onclick=()=> saveCurrent({ cleanAuthor:$('#cleanAuthor').checked, cleanLocation:$('#cleanLocation').checked, cleanSoftware:$('#cleanSoftware').checked, cleanDates:$('#cleanDates').checked });
+$('#batchPickBtn').onclick=()=> $('#batchInput').click(); $('#batchInput').onchange=e=>{ state.batch.push(...e.target.files); e.target.value=''; renderBatch(); }; $('#batchJsonBtn').onclick=exportBatchJson; $('#batchCsvBtn').onclick=exportBatchCsv; $('#batchClearBtn').onclick=()=>{ state.batch=[]; renderBatch(); };
+$('#clearHistoryBtn').onclick=()=>{ if(confirm(t('clearHistoryConfirm'))){ state.history=[]; localStorage.removeItem('metadata-history'); renderHistory(); } };
+$$('#themeSegment button').forEach(btn=> btn.onclick=()=>{ const v=btn.dataset.value; document.documentElement.dataset.theme=v; localStorage.setItem('metadata-theme',v); $$('#themeSegment button').forEach(b=>b.classList.toggle('active', b===btn)); }); $('#paletteSelect').onchange=e=>{ document.documentElement.dataset.palette=e.target.value; localStorage.setItem('metadata-palette', e.target.value); }; $$('#langSegment button').forEach(btn=> btn.onclick=()=>{ state.lang=btn.dataset.value; localStorage.setItem('metadata-lang', state.lang); applyI18n(); }); $('#contrastToggle').onchange=e=>{ const v=e.target.checked?'high':'normal'; document.documentElement.dataset.contrast=v; localStorage.setItem('metadata-contrast', v); }; $('#dyslexiaToggle').onchange=e=>{ const v=e.target.checked?'on':'off'; document.documentElement.dataset.dyslexia=v; localStorage.setItem('metadata-dyslexia', v); }; $('#motionToggle').onchange=e=>{ const v=e.target.checked?'reduced':'normal'; document.documentElement.dataset.motion=v; localStorage.setItem('metadata-motion', v); }; $('#fontScale').oninput=e=>{ const v=e.target.value; document.documentElement.style.setProperty('--font-scale', Number(v)/100); $('#scaleValue').textContent = v + ' %'; localStorage.setItem('metadata-scale', v); };
+window.addEventListener('resize',()=>{ if(innerWidth>860) document.body.classList.remove('sidebar-open'); });
+window.addEventListener('beforeunload', e=>{ if(state.dirty){ e.preventDefault(); e.returnValue=''; } });
+applyPrefs(); applyI18n(); renderAll();
 })();
 </script>
-</body></html>
+</body>
+</html>
