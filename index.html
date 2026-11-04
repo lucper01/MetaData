@@ -230,7 +230,7 @@ html[data-theme="dark"] .editor-action-bar{background:rgba(7,19,15,.94);border-c
 .hero{padding:20px;border-radius:30px;gap:18px}.hero-card{padding:22px;border-radius:24px}.hero-card h1{font-size:clamp(2rem,3.2vw,3.3rem);line-height:1.02}.dropzone{min-height:235px;border-radius:24px}.drop-icon{width:58px;height:58px;border-radius:19px;font-size:1.4rem}.dropzone strong{font-size:1.2rem}
 .mode-explainer{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;margin-top:12px;padding:11px 12px;border-radius:16px;background:var(--pale);border:1px solid rgba(11,47,35,.08);font-size:.72rem;color:var(--muted)}.mode-explainer strong{display:block;color:var(--dark);font-size:.76rem}.mode-explainer span:first-child{width:28px;height:28px;display:grid;place-items:center;border-radius:999px;background:var(--soft);color:var(--main);font-weight:900}
 @media(max-width:1160px){.editor-layout{grid-template-columns:1fr}.editor-layout>.grid{position:static}.main{padding-left:0}}
-@media(max-width:860px){.sidebar{margin:8px;height:calc(100vh - 16px)}.topbar{margin:8px 8px 0}.content{padding:12px}.editor-action-bar{bottom:8px}.hero-card h1{font-size:2.25rem}}
+@media(max-width:860px){.sidebar{margin:8px;height:calc(100vh - 16px)}.topbar{margin:8px 8px 0;grid-template-columns:auto minmax(0,1fr)}.top-actions{display:none}.content{padding:12px}.editor-action-bar{bottom:8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.editor-action-bar .button{width:100%;min-height:42px;padding:9px 8px}.editor-action-bar .editor-status{grid-column:1/-1;margin-left:0;text-align:center;justify-self:stretch}.hero-card h1{font-size:2.25rem}}
 
 </style>
 </head>
