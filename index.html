@@ -581,6 +581,123 @@ h2::before{
   .card{padding:16px!important}
 }
 
+
+/* MATRIX V3.1 - READABILITY PASS --------------------------------------- */
+html[data-theme="light"],
+html[data-theme="dark"]{
+  --mx-text:#edf7f0;
+  --mx-muted:#a8b9ad;
+  --mx-green:#67f59a;
+  --mx-green-2:#c9f8d9;
+  --mx-line:rgba(103,245,154,.22);
+  --mx-line-strong:rgba(103,245,154,.48);
+  --text:#edf7f0;
+  --muted:#a8b9ad;
+  --dark:#c9f8d9;
+  --main:#67f59a;
+  --line:rgba(103,245,154,.22);
+}
+body::before{opacity:.085!important}
+body{
+  line-height:1.58!important;
+  letter-spacing:0!important;
+}
+h1{
+  color:#f1fff5!important;
+  text-shadow:0 0 14px rgba(103,245,154,.08)!important;
+}
+h2,h3{
+  color:#e8f4ec!important;
+  text-shadow:none!important;
+}
+h2::before{color:var(--mx-green)!important}
+.lead{color:#b7c8bc!important}
+.hero-card .lead{color:#c2d1c6!important}
+.brand-copy strong{color:#eaf9ef!important;text-shadow:none!important}
+.top-title strong{color:#edf7f0!important;text-shadow:none!important}
+.top-title span{color:#a8b9ad!important}
+.sidebar-title{color:#8fa397!important}
+.nav-btn{color:#b2c4b8!important;font-size:.76rem!important}
+.nav-btn:hover{color:#f0fff4!important}
+.nav-btn.active{color:#00150a!important}
+.local-card,.user-card{color:#b7c6bc!important}
+.local-card strong,.user-copy strong{color:#e8f5ec!important}
+.button{
+  font-size:.74rem!important;
+  letter-spacing:.015em!important;
+  text-transform:none!important;
+  font-weight:760!important;
+  color:#e3f0e7!important;
+}
+.button.primary{
+  color:#00150a!important;
+  font-weight:900!important;
+}
+.badge{
+  letter-spacing:.025em!important;
+  text-transform:none!important;
+  color:#bff5d0!important;
+  font-size:.68rem!important;
+}
+.card{
+  background:linear-gradient(180deg,rgba(8,18,13,.985),rgba(5,12,8,.985))!important;
+  border-color:rgba(103,245,154,.18)!important;
+}
+.card:hover{border-color:rgba(103,245,154,.30)!important}
+.field label{
+  color:#d5e5da!important;
+  text-transform:none!important;
+  letter-spacing:.01em!important;
+  font-size:.74rem!important;
+}
+.field input,.field textarea,.field select,.search{
+  color:#f3fbf5!important;
+  background:#06100b!important;
+  border-color:rgba(103,245,154,.22)!important;
+  font-size:.9rem!important;
+}
+.field input::placeholder,.field textarea::placeholder,.search::placeholder{color:#75887b!important}
+.field input:focus,.field textarea:focus,.field select:focus,.search:focus{
+  background:#08150e!important;
+  border-color:#67f59a!important;
+  box-shadow:0 0 0 2px rgba(103,245,154,.10)!important;
+}
+.form-subsection-title{
+  color:#dcebe0!important;
+  text-transform:none!important;
+  letter-spacing:.01em!important;
+  font-size:.82rem!important;
+}
+.notice,.mode-explainer{
+  color:#bdd0c3!important;
+  line-height:1.55!important;
+}
+.mode-explainer strong{color:#eaf7ed!important}
+.editor-status{color:#c7d7cc!important}
+.preview{background:#06100b!important}
+.kv dt{color:#9ff0bb!important;font-size:.72rem!important}
+.kv dd{color:#d5e2d9!important;font-size:.76rem!important}
+.raw-table th{color:#a5eebd!important}
+.raw-table td{color:#dbe8df!important}
+.raw-table td:first-child{color:#edf7f0!important}
+.privacy-item strong,.batch-row strong,.history-item strong,.setting-copy strong{color:#e5f1e8!important}
+.privacy-item p,.batch-row span,.history-item span,.setting-copy span{color:#9fb1a5!important}
+.toast strong{color:#edf7f0!important}.toast span{color:#afc0b4!important}
+@media(max-width:860px){
+  body{font-size:.96rem!important}
+  .topbar{min-height:58px!important}
+  .top-title strong{font-size:.9rem!important}
+  .top-title span{font-size:.66rem!important}
+  .editor-action-bar{gap:7px!important;padding:9px!important}
+  .editor-action-bar .button{
+    font-size:.69rem!important;
+    letter-spacing:0!important;
+    line-height:1.18!important;
+    min-height:44px!important;
+  }
+  .field input,.field textarea,.field select{font-size:16px!important}
+}
+
 </style>
 </head>
 <body>
@@ -1007,7 +1124,7 @@ function renderHistory(){ const box=$('#historyList'); if(!state.history.length)
 function renderStats(){ const fields = Object.entries({...state.raw, ...getCurrentMeta()}).filter(([,v])=>v!==''&&v!==null&&v!==undefined).length; const editable = state.file ? (fieldSets[state.type] || fieldSets.generic).length : 0; $('#statFields').textContent = String(fields); $('#statEditable').textContent = String(editable); $('#statSensitive').textContent = String(sensitiveItems().length); $('#statMode').textContent = state.file ? (state.mode===t('modeEmbedded') ? (state.lang==='fr' ? 'Intégré' : 'Embedded') : 'Sidecar') : '-'; }
 function renderHeader(){ if(state.file){ $('#topTitle').textContent = state.file.name; $('#topSubtitle').textContent = `${state.type.toUpperCase()} · ${state.engine} · ${state.mode}`; $('#saveBtn').disabled=false; $('#resetBtn').disabled=false; $('#exportJsonTop').disabled=false; } else { $('#topTitle').textContent='MetaData'; $('#topSubtitle').textContent=t('topSubtitleDefault'); $('#saveBtn').disabled=true; $('#resetBtn').disabled=true; $('#exportJsonTop').disabled=true; } }
 function renderAll(){ renderHeader(); renderCurrent(); renderEditor(); renderRaw(); renderPrivacy(); renderBatch(); renderHistory(); renderStats(); }
-async function saveCurrent(cleanOptions=null){ if(!state.file){ toast(t('error'), t('selectFileFirst')); return; } try{ if(state.mode===t('modeEmbedded')){ const blob=await buildEmbeddedBlob(cleanOptions); downloadBlob(blob, buildOutputName(state.file.name, cleanOptions ? '_clean' : '_metadata')); addHistory(cleanOptions ? t('cleanDone') : t('saveDone'), state.file.name); if(!cleanOptions){ state.dirty=false; updateEditorStatus(); } toast(t('done'), cleanOptions ? t('cleanDone') : t('saveDoneText')); } else { const sidecarBlob=buildSidecarJson(cleanOptions); downloadBlob(sidecarBlob, state.file.name + (cleanOptions ? '.clean.metadata.json' : '.metadata.json')); addHistory(cleanOptions ? t('cleanDone') : t('saveDone'), state.file.name); if(!cleanOptions){ state.dirty=false; updateEditorStatus(); } toast(t('done'), cleanOptions ? t('cleanDone') : t('saveDoneText')); } }catch(err){ console.error(err); toast(t('error'), err.message || String(err)); } }
+async function saveCurrent(cleanOptions=null){ if(!state.file){ toast(t('error'), t('selectFileFirst')); return; } try{ if(state.mode===t('modeEmbedded')){ const blob=await buildEmbeddedBlob(cleanOptions); downloadBlob(blob, cleanOptions ? buildOutputName(state.file.name, '_clean') : state.file.name); addHistory(cleanOptions ? t('cleanDone') : t('saveDone'), state.file.name); if(!cleanOptions){ state.dirty=false; updateEditorStatus(); } toast(t('done'), cleanOptions ? t('cleanDone') : t('saveDoneText')); } else { const sidecarBlob=buildSidecarJson(cleanOptions); downloadBlob(sidecarBlob, state.file.name + (cleanOptions ? '.clean.metadata.json' : '.metadata.json')); addHistory(cleanOptions ? t('cleanDone') : t('saveDone'), state.file.name); if(!cleanOptions){ state.dirty=false; updateEditorStatus(); } toast(t('done'), cleanOptions ? t('cleanDone') : t('saveDoneText')); } }catch(err){ console.error(err); toast(t('error'), err.message || String(err)); } }
 function buildOutputName(name,suffix){ const i=name.lastIndexOf('.'); return i>=0 ? name.slice(0,i)+suffix+name.slice(i) : name+suffix; }
 function downloadBlob(blob,name){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1200); }
 function cleanMeta(meta, options){ const out=JSON.parse(JSON.stringify(meta)); if(options){ if(options.cleanAuthor){ ['author','artist','albumArtist','creator','lastModifiedBy','copyright'].forEach(k=> { if(k in out) out[k]=''; }); } if(options.cleanSoftware){ ['software','producer','modifierName'].forEach(k=> { if(k in out) out[k]=''; }); } if(options.cleanDates){ ['dateTime','year'].forEach(k=> { if(k in out) out[k]=''; }); } } return out; }
